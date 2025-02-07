@@ -1,21 +1,16 @@
 {
-	"name": "skooma",
-	"version": "1.7.0",
+	"name": "nyooom",
+	"version": "1.0.0",
 	"author": "darkwiiplayer",
 	"license": "Unlicense",
-	"main": "render.js",
+	"exports": {
+		".": "./render.js"
+	},
 	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/darkwiiplayer/skooma-js"
+		"url": "git+https://git.but.gay/darkwiiplayer/nyooom"
 	},
-	"homepage": "https://darkwiiplayer.github.io/skooma-js",
-	"keywords": [
-		"skooma",
-		"components",
-		"functional",
-		"html",
-		"ui",
-		"utility"
-	]
+	"homepage": "https://darkwiiplayer.github.io/nyooom",
+	"keywords": []
 }

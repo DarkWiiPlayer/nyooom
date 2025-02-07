@@ -19,7 +19,7 @@ class MultiAbortController {
 }
 
 /** A symbol representing nothing to be appended to an element */
-export const empty = Symbol("Explicit empty argument for Skooma")
+export const empty = Symbol("Explicit empty argument for Nyooom")
 
 /** Converts a snake-case string to a CSS property name
  * @param {string} key

@@ -1,7 +1,7 @@
-# Skooma
+# Nyooom
 
 ```js
-import {html} from "skooma/render.js"
+import {html} from "nyooom/render.js"
 
 document.body.append(
 	html.p(
@@ -17,15 +17,15 @@ document.body.append(
 
 ## Goals
 
-1. `skooma/render` should stay small enough to use it as just a helper library
+1. `nyooom/render` should stay small enough to use it as just a helper library
    to generate some dom nodes in any sort of web environment.
-1. `skooma/observable` should likewise function as a standalone reactive state
+1. `nyooom/observable` should likewise function as a standalone reactive state
    management library to be used with or without a framework
-1. A developer who doesn't use skooma should be able to read any code using it
+1. A developer who doesn't use nyooom should be able to read any code using it
    and piece together what it does based on structure and function names
-1. Skooma should be easy to gradually introduce into an application that uses
+1. Nyooom should be easy to gradually introduce into an application that uses
    a different framework or no framework at all
-1. Skooma should make it easy to gradually replace it with a different solution
+1. Nyooom should make it easy to gradually replace it with a different solution
    should it prove unfit for a project it is being used in
 1. The library should be hackable so that developers can tweak it for different
    environments like SSR or frameworks
@@ -38,8 +38,8 @@ This readme file may not reflect the latest state of the interface.**
 ## Overview
 
 ```js
-const text = new State({value: "Skooma is cool"})
-setTimeout(() => {text.value = "Skooma is awesome!"}, 1e5)
+const text = new State({value: "Nyooom is cool"})
+setTimeout(() => {text.value = "Nyooom is awesome!"}, 1e5)
 
 document.body.append(html.div(
     html.h1("Hello, World!"),
@@ -117,10 +117,10 @@ text`Hello, ${html.b(user)}!`
 ## handle
 
 ```js
-import {handle} from 'skooma/state.js'
+import {handle} from 'nyooom/state.js'
 ```
 
-Since it is common for event handlers to call `preventDefault()`, skooma
+Since it is common for event handlers to call `preventDefault()`, nyooom
 provides a helper function called `handle` with the following definition:
 
 ```js
