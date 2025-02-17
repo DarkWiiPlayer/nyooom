@@ -19,7 +19,7 @@ class MultiAbortController {
 }
 
 /** A symbol representing nothing to be appended to an element */
-export const empty = Symbol("Explicit empty argument for Nyooom")
+export const nothing = Symbol("Explicit non-argument for Nyooom")
 
 /** Converts a snake-case string to a CSS property name
  * @param {string} key
@@ -137,7 +137,7 @@ export class DomRenderer extends Renderer {
 	 * @param {Array} args
 	 */
 	static apply(element, ...args) {
-		for (const arg of args) if (arg !== empty) {
+		for (const arg of args) if (arg !== nothing) {
 			if (Array.isArray(arg)) {
 				this.apply(element, ...arg)
 			} else {
@@ -145,7 +145,7 @@ export class DomRenderer extends Renderer {
 				if (child)
 					element.append(child)
 				else if (typeof arg == "function")
-					this.apply(element, arg(element) || empty)
+					this.apply(element, arg(element) || nothing)
 				else if (arg instanceof DocumentFragment)
 					element.append(arg)
 				else if (arg && typeof(arg)=="object")
