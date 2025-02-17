@@ -35,13 +35,6 @@ const snakeToCSS = key => key.replace(/^[A-Z]/, a => "-" + a).replace(/[A-Z]/g, 
  * @property {function(Node):boolean} [filter]
  */
 
-/**
- * Returns a fallback if value is fallback
- * @param {any} value
- * @param {any} whenUndefined
- */
-const fallback = (value, whenUndefined) => typeof value != "undefined" ? value : whenUndefined
-
 /** @typedef {EventTarget & {value: any}} Observable */
 
 /** Cancelable event triggered when a reactive element gets replaced with something else */
@@ -367,31 +360,14 @@ export class DomHtmlRenderer extends DomRenderer {
 		return document.createElement(name.replace(/([a-z])([A-Z])/g, "$1-$2"), options)
 	}
 
-	/** Creates a new node and make it a custom element if necessary
+	/** Creates a new HTML node
 	 * @param {String} name
 	 * @param {Array} args
 	 */
 	node(name, args) {
-		const custom = this.getCustom(args)
-		const opts = custom && { is: String(custom) }
-
-		const element = this.createElement(name, opts)
+		const element = this.createElement(name)
 		this.constructor.apply(element, args)
 		return element
-	}
-
-	/** Recursively finds the last 'is' attribute in a list nested array of objects
-	 * @param {Array} args
-	 */
-	getCustom(args) {
-		return args.reduce(
-			(current, argument) => Array.isArray(argument)
-				? fallback(this.getCustom(argument), current)
-				: (argument && typeof argument == "object")
-					? fallback(argument.is, current)
-					: current
-			, undefined
-		)
 	}
 
 	/** @type {Object<string,SpecialAttributeDescriptor>} */
