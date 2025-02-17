@@ -41,7 +41,7 @@ const snakeToCSS = key => key.replace(/^[A-Z]/, a => "-" + a).replace(/[A-Z]/g, 
 export class BeforeReplaceEvent extends Event {
 	/** @param {Element|Text} next */
 	constructor(next) {
-		super("skooma:beforereplace", { cancelable: true })
+		super("nyooom:beforereplace", { cancelable: true })
 		this.next = next
 	}
 }
@@ -50,7 +50,7 @@ export class BeforeReplaceEvent extends Event {
 export class AfterReplaceEvent extends Event {
 	/** @param {Element|Text} next */
 	constructor(next) {
-		super("skooma:afterreplace")
+		super("nyooom:afterreplace")
 		this.next = next
 	}
 }
@@ -59,7 +59,7 @@ export class AfterReplaceEvent extends Event {
 export class ReplacedEvent extends Event {
 	/** @param {Element|Text} old */
 	constructor(old) {
-		super("skooma:replaced", { bubbles: true })
+		super("nyooom:replaced", { bubbles: true })
 		this.old = old
 	}
 }
@@ -72,7 +72,7 @@ export class AttributeEvent extends Event {
 	 * @param {any} to
 	 */
 	constructor(attribute, from, to) {
-		super("skooma:attribute", { cancelable: true })
+		super("nyooom:attribute", { cancelable: true })
 		this.attribute = attribute
 		this.from = from
 		this.to = to
@@ -289,7 +289,7 @@ export class DomRenderer extends Renderer {
 				style.setProperty(snakeToCSS(key), value.toString())
 	}
 
-	/** Returns whether an object is an observable according to skooma's contract
+	/** Returns whether an object is an observable according to nyooom's contract
 	 * @param {any} object
 	 * @return {object is Observable}
 	 */
