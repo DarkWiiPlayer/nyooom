@@ -345,6 +345,7 @@ export class DomRenderer extends Renderer {
 			fragment.append(this.toElement(items[key]))
 		}
 		fragment.append(document.createTextNode(literals[literals.length - 1]))
+		fragment.normalize()
 		return fragment
 	}
 }
