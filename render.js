@@ -360,16 +360,6 @@ export class DomHtmlRenderer extends DomRenderer {
 		return document.createElement(name.replace(/([a-z])([A-Z])/g, "$1-$2"), options)
 	}
 
-	/** Creates a new HTML node
-	 * @param {String} name
-	 * @param {Array} args
-	 */
-	node(name, args) {
-		const element = this.createElement(name)
-		this.constructor.apply(element, args)
-		return element
-	}
-
 	/** @type {Object<string,SpecialAttributeDescriptor>} */
 	static specialAttributes = {
 		value: {
