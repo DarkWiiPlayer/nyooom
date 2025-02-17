@@ -25,7 +25,8 @@ export const nothing = Symbol("Explicit non-argument for Nyooom")
  * @param {string} key
  * @return {string}
  */
-const snakeToCSS = key => key.replace(/^[A-Z]/, a => "-" + a).replace(/[A-Z]/g, a => '-' + a.toLowerCase())
+const snakeToCSS = key => key.replace(/([A-Z])/g, "-$1").replace(/^-/, "--").toLowerCase()
+const snakeToHTML = key => key.replace(/([A-Z])/g, "-$1").replace(/^-/, "").toLowerCase()
 
 /** @typedef SpecialAttributeDescriptor
  * @type {object}
@@ -358,7 +359,7 @@ export class DomHtmlRenderer extends DomRenderer {
 	 * @return {Node}
 	 */
 	createElement(name, options) {
-		return document.createElement(name.replace(/([a-z])([A-Z])/g, "$1-$2"), options)
+		return document.createElement(snakeToHTML(name), options)
 	}
 
 	/** @type {Object<string,SpecialAttributeDescriptor>} */

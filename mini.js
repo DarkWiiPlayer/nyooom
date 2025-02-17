@@ -1,7 +1,14 @@
-export default new Proxy(document, {
+/**
+ * @param {String} name
+ * @return {String}
+ */
+const snakeToHTML = name => name.replace(/([A-Z])/g, "-$1").replace(/^-/, "").toLowerCase()
+
+// @ts-ignore
+export default new Proxy(/** @type {Object<string,(...args: any)=>HTMLElement>} */(document), {
 	/** @param {string} tag */
 	get: (_, tag) => /** @param {any[]} args */ (...args) => {
-		let node = document.createElement(tag)
+		let node = document.createElement(snakeToHTML(tag))
 		for (const arg of args) {
 			if (arg instanceof HTMLElement) {
 				node.append(arg)
