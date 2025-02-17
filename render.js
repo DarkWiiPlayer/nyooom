@@ -92,7 +92,13 @@ export class AttributeEvent extends Event {
  * @param {function(event) : event} fn
  * @return {function(event)}
  */
-export const handle = fn => event => { event.preventDefault(); return fn(event) }
+export const noDefault = fn => event => { event.preventDefault(); return fn(event) }
+
+/** Wraps an event handler in a function that calls preventDefault on the event
+ * @param {function(event) : event} fn
+ * @return {function(event)}
+ */
+export const noPropagate = fn => event => { event.stopPropagation(); return fn(event) }
 
 
 /** A reference to an element that follows it around through replacements */
