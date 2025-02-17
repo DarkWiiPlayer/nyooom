@@ -100,47 +100,6 @@ export const noDefault = fn => event => { event.preventDefault(); return fn(even
  */
 export const noPropagate = fn => event => { event.stopPropagation(); return fn(event) }
 
-
-/** A reference to an element that follows it around through replacements */
-export class Ref {
-	/** @type {WeakMap<Text|Element,Text|Element>} */
-	static #map = new WeakMap()
-
-	/** @type {Element|Text} */
-	#element
-
-	/** @param {Element|Text} element */
-	constructor(element) {
-		this.#element = element
-	}
-
-	/** @return {Element|Text} */
-	deref() {
-		const next = Ref.newer(this.#element)
-		if (next) {
-			this.#element = next
-			return this.deref()
-		} else {
-			return this.#element
-		}
-	}
-
-	/** @param {Element|Text} element */
-	static newer(element) {
-		return this.#map.get(element)
-	}
-
-	/**
-	 * @param {Element|Text} previous
-	 * @param {Element|Text} next
-	 */
-	static replace(previous, next) {
-		if (this.newer(previous))
-			throw "Element has already been replaced with newer one"
-		this.#map.set(previous, next)
-	}
-}
-
 /** Main class doing all the rendering */
 export class Renderer {
 	static proxy() {
@@ -263,7 +222,6 @@ export class DomRenderer extends Renderer {
 			const next = this.toElement(observable.value)
 			if (element?.dispatchEvent(new BeforeReplaceEvent(next))) {
 				element.replaceWith(next)
-				Ref.replace(element, next)
 				next.dispatchEvent(new ReplacedEvent(element))
 				element.dispatchEvent(new AfterReplaceEvent(next))
 				ref = new WeakRef(next)
