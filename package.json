@@ -1,15 +1,15 @@
 {
 	"name": "nyooom",
-	"version": "1.0.0",
+	"version": "0.0.2",
 	"author": "darkwiiplayer",
 	"license": "Unlicense",
 	"exports": {
-		".": "./render.js"
+		"./render": "./render.js"
 	},
 	"type": "module",
 	"repository": {
 		"type": "git",
-		"url": "git+https://git.but.gay/darkwiiplayer/nyooom"
+		"url": "https://git.but.gay/darkwiiplayer/nyooom"
 	},
 	"homepage": "https://darkwiiplayer.github.io/nyooom",
 	"keywords": []
