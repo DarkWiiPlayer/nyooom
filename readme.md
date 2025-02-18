@@ -1,44 +1,10 @@
 # Nyooom
 
 ```js
-import {html} from "nyooom/render.js"
+import {html} from "nyooom/render"
+import {ObservableValue} from "nyooom/observable"
 
-document.body.append(
-	html.p(
-		"This is a paragraph with some text ",
-		html.b("and some bold text "),
-		html.img({
-			alt: "And an image",
-			href: "http://picsum.photos/200/200"
-		})
-	)
-)
-```
-
-## Goals
-
-1. `nyooom/render` should stay small enough to use it as just a helper library
-   to generate some dom nodes in any sort of web environment.
-1. `nyooom/observable` should likewise function as a standalone reactive state
-   management library to be used with or without a framework
-1. A developer who doesn't use nyooom should be able to read any code using it
-   and piece together what it does based on structure and function names
-1. Nyooom should be easy to gradually introduce into an application that uses
-   a different framework or no framework at all
-1. Nyooom should make it easy to gradually replace it with a different solution
-   should it prove unfit for a project it is being used in
-1. The library should be hackable so that developers can tweak it for different
-   environments like SSR or frameworks
-
-## Warning
-
-**This branch is in the process of being aggressively refactored and improved.
-This readme file may not reflect the latest state of the interface.**
-
-## Overview
-
-```js
-const text = new State({value: "Nyooom is cool"})
+const text = new ObservableValue("Nyooom is cool")
 setTimeout(() => {text.value = "Nyooom is awesome!"}, 1e5)
 
 document.body.append(html.div(
@@ -47,6 +13,21 @@ document.body.append(html.div(
     html.button("Show Proof", {click: event => { alert("It's true!") }})
 ))
 ```
+
+## Goals
+
+> Arrakis teaches the attitude of the knife - chopping off what's incomplete and
+> saying: "Now, it's complete because it's ended here."
+> 
+> — Frank Herbert, Dune
+
+Nyooom aims to offer as much convenienve as possible within the following
+constraints:
+
+1. Small, independent modules that can also work on their own
+1. Code should be easy to figure out by someone who doesn't actiely use nyooom
+1. Easy to gradually introduce and remove rather than forcing big re-writes
+1. Flexible, hackable and easy to audit
 
 ## Importmaps
 
