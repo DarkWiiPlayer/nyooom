@@ -21,16 +21,16 @@ const target = Symbol("Proxy Target")
  */
 
 /** Event fired for every change before the internal state has been updated that can be canceled. */
-export class SynchronousChangeEvent extends Event {
+export class ChangeEvent extends Event {
 	/** @param {Change} change */
 	constructor(change) {
-		super('synchronous', {cancelable: true})
+		super('change', {cancelable: true})
 		this.change = Object.freeze(change)
 	}
 }
 
 /** Event fired for one or more changed values after the internal state has been updated. */
-export class MultiChangeEvent extends Event {
+export class ChangedEvent extends Event {
 	/** @type {any} */
 	#final
 	/** @type {any} */
@@ -71,14 +71,6 @@ export class MultiChangeEvent extends Event {
 	}
 }
 
-export class ValueChangeEvent extends MultiChangeEvent {
-	get value() {
-		return this.final.value
-	}
-}
-
-/* Observable Classes */
-
 export class Observable extends EventTarget {
 	#synchronous
 	/** @type Change[]> */
@@ -101,6 +93,11 @@ export class Observable extends EventTarget {
 		this.proxy = new Proxy(this.constructor.prototype.proxy, {
 			get: (target, prop) => target.call(this, prop)
 		})
+	}
+
+	/** @param {Change[]} changes */
+	emit(...changes) {
+		this.dispatchEvent(new ChangedEvent(...changes))
 	}
 
 	/**
@@ -136,7 +133,7 @@ export class Observable extends EventTarget {
 	 */
 	enqueue(property, from, to, mutation=false) {
 		const change = {property, from, to, mutation}
-		if (!this.dispatchEvent(new SynchronousChangeEvent(change))) return false
+		if (!this.dispatchEvent(new ChangeEvent(change))) return false
 		if (!this.synchronous) {
 			if (!this.#queue) {
 				this.#queue = []
@@ -152,17 +149,13 @@ export class Observable extends EventTarget {
 		return true
 	}
 
-	/** @param {any[]} _args */
-	emit(..._args) {
-		throw new TypeError(`${this.constructor.name} did not define an 'emit' method`)
-	}
-
 	get signal() { return this.#abortController.signal }
 	get synchronous() { return this.#synchronous }
+
+	get changesQueued() { return Boolean(this.#queue) }
 }
 
 export class ObservableObject extends Observable {
-
 	/**
 	 * @param {Object} target
 	 * @param {Object} options
@@ -212,15 +205,10 @@ export class ObservableObject extends Observable {
 		return proxy
 	}
 
-	/** @param {Change[]} changes */
-	emit(...changes) {
-		this.dispatchEvent(new MultiChangeEvent(...changes))
-	}
-
 	/** @type Map<Observable, Map<String, Function>> */
 	#nested = new Map()
 
-	/** Adopts an obsercable to be notified of its changes
+	/** Adopts an observable to be notified of its changes
 	 * @param {string} prop
 	 * @param {Observable} observable
 	 */
@@ -272,20 +260,9 @@ export class ObservableValue extends Observable {
 		}
 	}
 
-	/**
-	 * @param {string} prop
-	 * @param {function(any):void} callback
-	 */
-	subscribe(prop, callback) {
-		// @ts-ignore
-		if (typeof(prop) == "function") [prop, callback] = ["value", prop]
-
-		this.constructor.prototype.subscribe.call(this, prop, callback)
-	}
-
 	/** @param {Change[]} changes */
 	emit(...changes) {
-		this.dispatchEvent(new ValueChangeEvent(...changes))
+		this.dispatchEvent(new ChangedEvent(...changes))
 	}
 }
 
@@ -325,7 +302,7 @@ class ProxiedObservableValue extends ObservableValue {
 
 const attributeObserver = new MutationObserver(mutations => {
 	for (const {type, target, attributeName: name} of mutations) {
-		if (type == "attributes") {
+		if (type == "attributes" && target instanceof HTMLElement) {
 			const next = target.getAttribute(name)
 			const camelName = kebabToCamel(name)
 			if (String(target.state.values[camelName]) !== next)
@@ -340,17 +317,21 @@ export const component = (name, generator, methods) => {
 		generator = name
 		name = camelToKebab(generator.name)
 	}
-	const Element = class extends HTMLElement{
+	component[kebabToCamel(name)] = class extends HTMLElement{
+		/** @type {ObservableObject} */
+		state
+
 		constructor() {
 			super()
 			const target = Object.fromEntries([...this.attributes].map(attribute => [kebabToCamel(attribute.name), attribute.value]))
 			this.state = new ObservableObject(target)
-			this.state.addEventListener("change", event => {
-				for (const {property, to: value} of event.changes) {
-					const kebabName = camelToKebab(property)
-					if (this.getAttribute(kebabName) !== String(value))
-						this.setAttribute(kebabName, value)
-				}
+			this.state.addEventListener("changed", event => {
+				if (event instanceof ChangedEvent)
+					for (const {property, to: value} of event.changes) {
+						const kebabName = camelToKebab(property)
+						if (this.getAttribute(kebabName) !== String(value))
+							this.setAttribute(kebabName, value)
+					}
 			})
 			attributeObserver.observe(this, {attributes: true})
 			const content = generator.call(this, this.state)
@@ -364,21 +345,26 @@ export const component = (name, generator, methods) => {
 	return Element;
 }
 
-class ObservableComposition extends ObservableValue {
+class Composition extends ObservableValue {
 	#func
 	#states
 
-	constructor(func, options, ...states) {
+	/**
+	 * @param {(...values: any[]) => any} func
+	 * @param {Object} options
+	 * @param {Observable[]} states
+	 */
+	constructor(func, options, ...obesrvables) {
 		super(options)
 
 		this.#func = func
-		this.#states = states
+		this.#states = obesrvables
 
 		const abortController = new AbortController()
 		abortRegistry.register(this, abortController)
 		const ref = new WeakRef(this)
 
-		states.forEach(state => {
+		obesrvables.forEach(state => {
 			state.addEventListener("change", () => {
 				ref.deref()?.scheduleUpdate()
 			}, {signal: abortController.signal})
@@ -387,7 +373,7 @@ class ObservableComposition extends ObservableValue {
 		this.update()
 	}
 
-	#microtaskQueued
+	#microtaskQueued = false
 	scheduleUpdate() {
 		if (this.synchronous) {
 			this.update()
@@ -410,106 +396,12 @@ class ObservableComposition extends ObservableValue {
 	}
 }
 
-export const compose = func => (...states) => new ObservableComposition(func, {}, ...states)
-
-class MutationEvent extends Event {
-	constructor() {
-		super("mutation", {bubbles: true})
-	}
-}
-
-const mutationObserver = new MutationObserver(mutations => {
-	for (const mutation of mutations) {
-		mutation.target.dispatchEvent(new MutationEvent())
-	}
-})
-
-export class ObservableElement extends Observable {
-	#getValue
-	#equal
-
-	#value
-	#changedValue = false
-
+/**
+ * @param {Function} func
+ */
+export const compose = func =>
 	/**
-	 * @param {HTMLElement} target
+	 * @param {Observable[]} observables
 	 */
-	constructor(target, {get=undefined, equal=undefined, ...options}={}) {
-		// @ts-ignore
-		super(options)
-		Object.defineProperty(this, "target", {value: target, configurable: false, writable: false})
-
-		this.#getValue = get ?? (target => target.value)
-		this.#equal = equal ?? ((a, b) => a===b)
-
-		this.#value = this.#getValue(target)
-
-		const controller = new AbortController()
-		target.addEventListener("mutation", event => { this.update(event) }, {signal: controller.signal})
-
-		abortRegistry.register(this, controller)
-		mutationObserver.observe(target, {
-			attributes: true,
-			childList: true,
-			characterData: true,
-			subtree: true,
-		})
-	}
-
-	get value() { return this.#value }
-
-	update() {
-		const current = this.#getValue(this.target)
-
-		if (this.#equal(this.#value, current)) return
-
-		this.#value = current
-
-		if (this.synchronous) {
-			this.dispatchEvent(new ValueChangeEvent(["value", current]))
-		} else {
-			if (!this.#changedValue) {
-				queueMicrotask(() => {
-					this.#changedValue = false
-					this.dispatchEvent(new ValueChangeEvent(["value", this.#changedValue]))
-				})
-				this.#changedValue = current
-			}
-		}
-	}
-}
-
-export class MapStorage extends Storage {
-	#map = new Map()
-	/**
-	 * @param {number} index
-	 * @return {string}
-	 */
-	key(index) {
-		return [...this.#map.keys()][index]
-	}
-	/**
-	 * @param {string} keyName
-	 * @return {any}
-	 */
-	getItem(keyName) {
-		if (this.#map.has(keyName))
-			return this.#map.get(keyName)
-		else
-			return null
-	}
-	/**
-	 * @param {string} keyName
-	 * @param {any} keyValue
-	 */
-	setItem(keyName, keyValue) {
-		this.#map.set(keyName, String(keyValue))
-	}
-	/** @param {string} keyName */
-	removeItem(keyName) {
-		this.#map.delete(keyName)
-	}
-	clear() {
-		this.#map.clear()
-	}
-}
+	(...observables) =>
+		new Composition(func, {}, ...observables)

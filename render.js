@@ -220,9 +220,9 @@ export class DomRenderer extends Renderer {
 				element.dispatchEvent(new AfterReplaceEvent(next))
 				ref = new WeakRef(next)
 			}
-			observable.addEventListener("change", handleChange, {once: true})
+			observable.addEventListener("changed", handleChange, {once: true})
 		}
-		observable.addEventListener("change", handleChange, {once: true})
+		observable.addEventListener("changed", handleChange, {once: true})
 
 		return element
 	}
@@ -261,7 +261,7 @@ export class DomRenderer extends Renderer {
 	static setReactiveAttribute(element, attribute, observable) {
 		const multiAbort = new MultiAbortController()
 
-		observable.addEventListener("change", () => {
+		observable.addEventListener("changed", () => {
 			multiAbort.abort()
 			if (element.dispatchEvent(new AttributeEvent(attribute, element.getAttribute(attribute), observable.value)))
 				this.setAttribute(element, attribute, observable.value, multiAbort.signal)
