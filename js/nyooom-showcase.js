@@ -1,5 +1,5 @@
-import {html,empty} from "https://cdn.jsdelivr.net/gh/darkwiiplayer/skooma-js@f79e7a9/skooma.js"
-import {State} from "https://cdn.jsdelivr.net/gh/darkwiiplayer/skooma-js@f79e7a9/state.js"
+import {html,nothing} from "nyooom/render"
+import {ObservableValue,ObservableObject} from "nyooom/observable"
 import element from "https://darkwiiplayer.github.io/easier-elements-js/easier-elements.js"
 import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js';
 import lang_html from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/xml.min.js"
@@ -55,7 +55,7 @@ const theme = html.link({
 	href: "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css"
 })
 
-element(class SkoomaShowcase extends HTMLElement {
+element(class NyooomShowcase extends HTMLElement {
 	constructor() {
 		super()
 		this.attachShadow({mode: "open"})
@@ -76,25 +76,9 @@ element(class SkoomaShowcase extends HTMLElement {
 	}
 
 	connectedCallback() {
+		this.classList.add("box")
 		this.shadowRoot.replaceChildren(
 			html.slot(),
-			html.span("🖉", {
-				class: "edit",
-				click: ({target: button}) => {
-					this.querySelectorAll("[contenteditable]")
-						.forEach(item => {
-							if (item.contentEditable == "true") {
-								item.contentEditable = "false"
-								button.classList.remove("editing")
-								this.format()
-							} else {
-								item.contentEditable = "true"
-								button.classList.add("editing")
-								item.innerText = item.innerText
-							}
-						})
-				}
-			}),
 			html.style(css),
 			...Array.from(document.styleSheets).map(sheet => sheet.ownerNode.cloneNode(true)),
 			theme.cloneNode(true),
@@ -110,7 +94,7 @@ element(class SkoomaShowcase extends HTMLElement {
 		const code = this.querySelector("code").innerText
 		try {
 			const fn = new Function("html", "empty", "State", code)
-			const result = fn(html, empty, State)
+			const result = fn(html, nothing, ObservableValue)
 			this.error.replaceChildren()
 			this.output.innerHTML = hljs.highlight("html", result.outerHTML).value
 			this.preview.classList.toggle("hidden", this.getAttribute("preview") === "false")

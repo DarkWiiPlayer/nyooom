@@ -11,7 +11,10 @@
 
 	& em {
 		font-style: unset;
-		color: var(--secondary-5);
+		color: var(--secondary-4);
+		@container style(--color-scheme: dark) {
+			color: var(--secondary-7);
+		}
 	}
 }
 
