@@ -204,7 +204,7 @@ export class DomRenderer extends Renderer {
 		if (observable.value instanceof DocumentFragment) {
 			throw "Failed to create reactive element: Document fragments cannot be replaced dynamically"
 		}
-		const element = this.toElement(observable.value)
+		const element = this.toElement(observable.value) || document.createComment("Reactive element Placeholder")
 		untilDeathDoThemPart(element, observable)
 		let ref = new WeakRef(element)
 
@@ -217,6 +217,7 @@ export class DomRenderer extends Renderer {
 			if (element?.dispatchEvent(new BeforeReplaceEvent(next))) {
 				element.replaceWith(next)
 				next.dispatchEvent(new ReplacedEvent(element))
+				untilDeathDoThemPart(next, observable)
 				element.dispatchEvent(new AfterReplaceEvent(next))
 				ref = new WeakRef(next)
 			}
