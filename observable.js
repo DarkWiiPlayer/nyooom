@@ -38,7 +38,7 @@ export class ChangedEvent extends Event {
 
 	/** @param {Change[]} changes */
 	constructor(...changes) {
-		super('change')
+		super('changed')
 		this.changes = changes
 	}
 
