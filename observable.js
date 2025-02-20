@@ -134,6 +134,7 @@ export class Observable extends EventTarget {
 	enqueue(property, from, to, mutation=false) {
 		const change = {property, from, to, mutation}
 		if (!this.dispatchEvent(new ChangeEvent(change))) return false
+
 		if (!this.synchronous) {
 			if (!this.#queue) {
 				this.#queue = []
@@ -260,9 +261,14 @@ export class ObservableValue extends Observable {
 		}
 	}
 
-	/** @param {Change[]} changes */
-	emit(...changes) {
-		this.dispatchEvent(new ChangedEvent(...changes))
+	/**
+	 * @param {(value: any) => any} func
+	 */
+	compose(func) {
+		return new Composition(func, {}, this)
+	}
+
+	proxy(methods) {
 	}
 }
 
@@ -365,34 +371,17 @@ class Composition extends ObservableValue {
 		const ref = new WeakRef(this)
 
 		obesrvables.forEach(state => {
-			state.addEventListener("change", () => {
-				ref.deref()?.scheduleUpdate()
+			state.addEventListener("changed", () => {
+				ref.deref()?.update()
 			}, {signal: abortController.signal})
 		})
 
 		this.update()
 	}
 
-	#microtaskQueued = false
-	scheduleUpdate() {
-		if (this.synchronous) {
-			this.update()
-		} else {
-			if (!this.#microtaskQueued) {
-				queueMicrotask(() => {
-					this.#microtaskQueued = false
-					this.update()
-				})
-				this.#microtaskQueued = true
-			}
-		}
-	}
-
 	update() {
 		const value = this.#func(...this.#states.map(state => state.value))
-		const change = {property: "value", from: this.value, to: value}
 		this.value = value
-		this.emit(change)
 	}
 }
 
