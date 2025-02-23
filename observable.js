@@ -264,7 +264,7 @@ export class ObservableValue extends Observable {
 	/**
 	 * @param {(value: any) => any} func
 	 */
-	compose(func) {
+	transform(func) {
 		return new Composition(func, {}, this)
 	}
 
