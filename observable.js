@@ -224,7 +224,7 @@ export class ObservableObject extends Observable {
 		const handler = () => ref.deref()?.emit(prop, observable, observable, {observable: true})
 
 		handlers.set(prop, handler)
-		observable.addEventListener("change", handler, {signal: this.signal})
+		observable.addEventListener("changed", handler, {signal: this.signal})
 	}
 
 	/** Undoes the adoption of a nested observable, cancelling the associated event hook
@@ -234,7 +234,7 @@ export class ObservableObject extends Observable {
 	disown(prop, observable) {
 		const handlers = this.#nested.get(observable)
 		const handler = handlers.get(prop)
-		observable.removeEventListener("change", handler)
+		observable.removeEventListener("changed", handler)
 		handlers.delete(prop)
 		if (handlers.size == 0) {
 			this.#nested.delete(observable)
@@ -286,7 +286,7 @@ class ProxiedObservableValue extends ObservableValue {
 		this.#prop = prop
 
 		const ref = this.ref
-		backend.addEventListener("synchronous", event => {
+		backend.addEventListener("change", event => {
 			const {property, from, to, ...rest} = event.change
 			if (property == this.#prop) {
 				ref.deref()?.enqueue({
