@@ -323,7 +323,8 @@ export const component = (name, generator, methods) => {
 		generator = name
 		name = camelToKebab(generator.name)
 	}
-	component[kebabToCamel(name)] = class extends HTMLElement{
+	const jsName = kebabToCamel(name)
+	component[jsName] = class extends HTMLElement{
 		/** @type {ObservableObject} */
 		state
 
@@ -344,11 +345,12 @@ export const component = (name, generator, methods) => {
 			if (content) this.replaceChildren(content)
 		}
 	}
+	const element = component[jsName]
 	if (methods) {
-		Object.defineProperties(Element.prototype, Object.getOwnPropertyDescriptors(methods))
+		Object.defineProperties(element.prototype, Object.getOwnPropertyDescriptors(methods))
 	}
-	customElements.define(name, Element)
-	return Element;
+	customElements.define(name, element)
+	return element;
 }
 
 class Composition extends ObservableValue {
