@@ -121,7 +121,7 @@
 				</p>
 
 				<p>
-					If that sounds good, it's time to back up those claims!
+					Sounds good? Continue reading to find out how to try it yourself!
 				</p>
 			</div>
 		</section>
@@ -252,14 +252,13 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 
 					<nyooom-showcase preview=false>
 						<code>
-<div contenteditable="false">return html.span(
-	{ dataset: {
+<div contenteditable="false">return html.span({
+	dataset: {
 		from: "Fire",
 		to: "Heat",
 		snakeCase: "converted"
-	} },
-	"Heat from Fire"
-)</div>
+	}
+}, "Heat from Fire")</div>
 						</code>
 					</nyooom-showcase>
 
@@ -269,13 +268,12 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 
 					<nyooom-showcase code=false>
 						<code>
-<div contenteditable="false">return html.div(
-	{ shadowRoot: [
+<div contenteditable="false">return html.div({
+	shadowRoot: [
 		html.p("Shadow DOM text"),
 		"Arrays work too :)"
-	]},
-	"Light DOM text"
-)</div>
+	]
+}, "Light DOM text")</div>
 						</code>
 					</nyooom-showcase>
 				</section>
@@ -365,22 +363,20 @@ return html.buttonGroup(
 			<nyooom-showcase code="false">
 				<code>
 <div contenteditable="false">const task = value => 
-html.flexRow (
-	{class: "todo", gap: 1},
-	value,
-	html.span("[x]", {
-		style: {
-			color: "var(--primary-6)",
-			cursor: "pointer"
-		},
-		click(event) {
-			event
-				.target
-				.closest(".todo")
-				.remove()
-		}
-	})
-)
+	html.flexRow(
+		{ class: "todo", gap: 1 },
+		value,
+		html.span("[x]", {
+			style: { cursor: "pointer" },
+			click(event) {
+				event
+					.target
+					.closest(".todo")
+					.remove()
+			}
+		})
+	)
+
 let todo, input
 return todo = html.flexColumn(
 	{gap: 1},
