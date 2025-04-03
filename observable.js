@@ -2,7 +2,7 @@
 const abortRegistry = new FinalizationRegistry(controller => controller.abort())
 
 /** @param {String} string */
-const camelToKebab = string => string.replace(/([a-z])([A-Z])/g, (_, a, b) => `${a}-${b.toLowerCase()}`)
+const camelToKebab = string => string.replace(/([a-z])([A-Z])/g, (_, a, b) => `${a}-${b}`).toLowerCase()
 /** @param {String} string */
 const kebabToCamel = string => string.replace(/([a-z])-([a-z])/g, (_, a, b) => a+b.toUpperCase())
 
