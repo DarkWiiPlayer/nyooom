@@ -173,6 +173,39 @@ const input_2 = html.input({ type: "number", value: state })
 
 ## Helpers
 
+### Wrapper
+
+Sometimes writing entire sections in a functional style is a bit inconvenient,
+and a side-effect based style would be better.
+
+This is possile using the `wrapper` helper method on the DomRenderers
+
+```js
+const h = DomHtmlRenderer.wrapper
+
+const content = h(fragmet => {
+	fragment.h1("Functions have side effects")
+	fragment.p("There is no special functionality for nested nodes:")
+	fragment.ul(h(ul => {
+		ul.li("Foo")
+		ul.li("Bar")
+		ul.li("Baz")
+	}))
+	fragment.p("However, it is quite easy to add ", html.b("nested elements"))
+})
+```
+
+Wrappers create a document fragment, call the passed in function with a special
+proxy that, itself, wraps the render proxy of the Renderer object, but has its
+return values added to the fragment, then finally returns the document fragment.
+
+This means that the methods on the helper take the same arguments as described
+above, but append their results to a buffer instead of returning them. This
+makes it very easy to comine both rendering styles as needed.
+
+There is currently no export for a default HTML renderer wrapper, but this is
+planned for the future once an appropriate name has been found.
+
 ### Empty Values
 
 Nyooom will produce a warning when it encounters `undefined` as an argument to a

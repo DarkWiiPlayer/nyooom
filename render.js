@@ -96,11 +96,27 @@ export const noPropagate = fn => event => { event.stopPropagation(); return fn(e
 
 /** Main class doing all the rendering */
 export class Renderer {
-	static proxy() {
-		return new Proxy(new this(), {
+	static get proxy() {
+		return this._proxy ??= new Proxy(new this(), {
 			/** @param {string} prop */
 			get: (renderer, prop) => /** @param {any[]} args */ (...args) => renderer.node(prop, args),
 			has: (renderer, prop) => renderer.nodeSupported(prop),
+		})
+	}
+
+	static get wrapper() {
+		return this._wrapper ??= (callback => {
+			const template = document.createElement("template")
+			const buffer = template.content
+
+			const renderer = new Proxy(new this(), {
+				get: (renderer, prop) => /** @param {any[]} args */ (...args) => buffer.append(renderer.node(prop, args)),
+				has: (renderer, prop) => renderer.nodeSupported(prop),
+			})
+
+			callback(renderer)
+
+			return buffer
 		})
 	}
 
@@ -420,8 +436,8 @@ export class DomSvgRenderer extends DomRenderer {
 	}
 }
 
-export const html = DomHtmlRenderer.proxy()
-export const svg = DomSvgRenderer.proxy()
+export const html = DomHtmlRenderer.proxy
+export const svg = DomSvgRenderer.proxy
 
 export const fragment = DomRenderer.documentFragment.bind(DomRenderer)
 export const text = DomRenderer.createTextOrFragment.bind(DomRenderer)
