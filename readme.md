@@ -2,14 +2,14 @@
 
 ```js
 import {html} from "nyooom/render"
-import {ObservableValue} from "nyooom/observable"
+import {Observable} from "nyooom/observable"
 
-const text = new ObservableValue("Nyooom is cool")
+const text = new Observable({value: "Nyooom is cool"})
 setTimeout(() => {text.value = "Nyooom is awesome!"}, 1e5)
 
 document.body.append(html.div(
     html.h1("Hello, World!"),
-    html.p(text, {class: "amazing"}),
+    html.p(text.signal("value"), {class: "amazing"}),
     html.button("Show Proof", {click: event => { alert("It's true!") }})
 ))
 ```
@@ -25,9 +25,9 @@ Nyooom aims to offer as much convenienve as possible within the following
 constraints:
 
 1. Small, independent modules that can also work on their own
-1. Code should be easy to figure out by someone who doesn't actiely use nyooom
+1. Easy to figure out by someone who doesn't normally use nyooom
 1. Easy to gradually introduce and remove rather than forcing big re-writes
-1. Flexible, hackable and easy to audit
+1. Flexible and hackable
 
 ## Importmaps
 
