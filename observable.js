@@ -65,14 +65,14 @@ export class Observable extends EventTarget {
 	#ref = new WeakRef(this)
 	get ref() { return this.#ref }
 
+	static get new() { throw new Error("Attempting to call 'new' as a class method; this is JavaScript, you absolute imbecile!") }
+
 	/**
 	 * @param {Object} target
 	 * @param {Options} options
 	 */
 	constructor(target={}, {children=false, same}={}) {
 		super()
-
-		Object.defineProperty(this, "observable", {value: true, configurable: false, writable: false})
 
 		abortRegistry.register(this, this.#abortController)
 
@@ -97,12 +97,13 @@ export class Observable extends EventTarget {
 					}
 				}
 				return true
-			},
-			/**
-			 * @param {Object} target
-			 * @param {String} property
-			 */
-			get: (target, property) => target[property],
+			}
+		})
+
+		this.readOnly = new Proxy(target, {
+			set(_, prop) {
+				throw new TypeError(`Attempting to set property ${String(prop)} on read-only values proxy`)
+			}
 		})
 	}
 
