@@ -130,12 +130,13 @@ export class Observable extends EventTarget {
 	emit(changes) {
 		this.dispatchEvent(new ChangesEvent(...changes))
 
-		if (this.#signals.size || this.#promises.size) {
+		if (this.#states.size || this.#promises.size) {
 			for (const change of changes) {
 				const {property} = change
 
-				if (this.#signals.has(property)) {
-					throw("Fallback signals aren't implemented yet!")
+				if (this.#states.has(property)) {
+					const pair = this.#states.get(property)
+					pair.update(change.to)
 				}
 
 				if (this.#promises.has(property)) {
@@ -217,27 +218,207 @@ export class Observable extends EventTarget {
 		return promise
 	}
 
-	/** @type {Map<String,FallbackSignal>} */
-	#signals = new Map()
+	/** @type {Map<String,readOnlyPair<any>>} */
+	#states = new Map()
 
 	/** @param {String} property */
-	signal(property) {
-		const cached = this.#signals.get(property)
+	state(property) {
+		const cached = this.#states.get(property)
 		if (cached) return cached
 
-		const signal = new FallbackSignal(this, property)
-		this.#signals.set(property, signal)
-		return signal
+		const pair = State.readOnly(this.values[property])
+		this.#states.set(property, pair)
+		return pair.state
 	}
 }
 
-class FallbackSignal {
+const valueKey = Symbol("value")
+
+/** @template T */
+export class State extends EventTarget {
+	static dirty = Symbol("dirty")
+	static clean = Symbol("clean")
+	static orphaned = Symbol("orphaned")
+	/** @typedef {State.dirty|State.clean|State.orphaned} state */
+
 	/**
-	 * @param {Observable} _observable
-	 * @param {String} _property
+	 * @template G
+	 * @param {G} value
+	 * @return {WriteableState<G>}
 	 */
-	constructor(_observable, _property) {
-		throw("Fallback signals aren't implemented yet!")
+	static value(value) { return new WriteableState(value) }
+
+	static compute(fn) { return (...inputs) => new ComputedState(fn, ...inputs) }
+
+	/** @template G
+	 * @typedef {{state: State<G>, update: (value: G)=>void}} readOnlyPair
+	 */
+
+	/**
+	 * @template G
+	 * @param {G} value
+	 * @return {readOnlyPair<G>}
+	 */
+	static readOnly(value) {
+		/** @type {State<G>} */
+		const state = new State()
+		state[valueKey] = value
+		/** @param {G} newValue */
+		const update = newValue => {
+			state[valueKey] = newValue
+			state.notifyChange()
+		}
+		return {state, update}
+	}
+
+	/** @type {AbortSignal} */
+	collectedSignal
+
+	constructor() {
+		super()
+		const controller = new AbortController()
+		abortRegistry.register(this, controller)
+		Object.defineProperty(this, "collectedSignal", {value: controller.signal, writable: false, configurable: false})
+	}
+
+	/**
+	 * @type {T}
+	 * @protected
+	 */
+	[valueKey]
+
+	/** @return {T} */
+	get value() {
+		return this[valueKey]
+	}
+
+	notifyChange() {
+		this.dispatchEvent(new CustomEvent("change"))
+	}
+
+	/** @return {state} */
+	get state() { return State.clean }
+}
+
+/**
+ * @template T
+ * @class WriteableState
+ * @extends State<T>
+ */
+class WriteableState extends State {
+	/** @param {T} value */
+	constructor(value) {
+		super()
+		this[valueKey] = value
+	}
+
+	/** @param {T} value */
+	set value(value) {
+		if (value !== this[valueKey]) {
+			this[valueKey] = value
+			this.notifyChange()
+		}
+	}
+}
+
+/** @template {object} T */
+class RevocableRef {
+	/** @param {T} target */
+	constructor(target) {
+		this.target = target
+	}
+	/** @return {T} */
+	deref() { return this.target }
+	revoke() { this.target = undefined }
+}
+
+/**
+ * @template {object} T
+ * @typedef {WeakRef<T>|RevocableRef<T>} Ref
+ */
+
+/** @template T */
+class ComputedState extends State {
+	/** @type {(...args: any[]) => T} */
+	#fn
+
+	/** @type {Ref<State<any>>[]} */
+	#inputs
+
+	#state = State.dirty
+
+	/** @type {any[]} */
+	#values
+
+	/**
+	 * @param {(...args: any[]) => T} fn
+	 * @param {State[]} inputs
+	 */
+	constructor(fn, ...inputs) {
+		super()
+		const eventParams = {signal: this.collectedSignal}
+
+		this.#fn = fn
+		this.#values = new Array(inputs.length)
+		this.#inputs = inputs.map(input => {
+			input.addEventListener("change", () => { this.setDirty() }, eventParams)
+			if (input instanceof ComputedState) {
+				const ref = new RevocableRef(input)
+				input.addEventListener("orphaned", () => {
+					this.checkOrphaned()
+					ref.revoke()
+				}, eventParams)
+				return ref
+			} else {
+				const ref = new WeakRef(input)
+				input.collectedSignal.addEventListener("abort", () => {
+					this.checkOrphaned()
+				}, eventParams)
+				return ref
+			}
+		})
+	}
+
+	checkOrphaned() {
+		for (const ref of this.#inputs) {
+			if (ref.deref()) {
+				return false
+			}
+		}
+		this.#state = State.orphaned
+		this.dispatchEvent(new CustomEvent("orphaned"))
+		return true
+	}
+
+	setDirty() {
+		this.#state = State.dirty
+		this.notifyChange()
+	}
+
+	get state() { return this.#state }
+
+	get value() {
+		if (this.state !== State.clean) {
+			if (this.checkChanges()) {
+				this[valueKey] = this.#fn(...this.#inputs.map((ref, index) => {
+					const state = ref.deref()
+					if (state) {
+						return state.value
+					} else {
+						return this.#values[index]
+					}
+				}))
+			}
+			this.#state = State.clean
+		}
+		return this[valueKey]
+	}
+
+	checkChanges() {
+		for (const key in this.#inputs) {
+			if (this.#inputs[key] !== this.#values[key]) return true
+		}
+		return false
 	}
 }
 
