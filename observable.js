@@ -94,6 +94,8 @@ export class Observable extends EventTarget {
 							if (value instanceof Observable) this.adopt(property, value)
 						}
 						target[property] = value
+					} else {
+						return false
 					}
 				}
 				return true
@@ -399,26 +401,25 @@ class ComputedState extends State {
 
 	get value() {
 		if (this.state !== State.clean) {
-			if (this.checkChanges()) {
-				this[valueKey] = this.#fn(...this.#inputs.map((ref, index) => {
-					const state = ref.deref()
-					if (state) {
-						return state.value
-					} else {
-						return this.#values[index]
-					}
-				}))
+			if (this.updateValues()) {
+				this[valueKey] = this.#fn(...this.#values)
 			}
 			this.#state = State.clean
 		}
 		return this[valueKey]
 	}
 
-	checkChanges() {
+	updateValues() {
+		let changed = false
 		for (const key in this.#inputs) {
-			if (this.#inputs[key] !== this.#values[key]) return true
+			const state = this.#inputs[key].deref()
+			const value = state?.value
+			if (state && (value !== this.#values[key])) {
+				this.#values[key] = value
+				changed = true
+			}
 		}
-		return false
+		return changed
 	}
 }
 
