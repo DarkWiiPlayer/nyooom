@@ -293,6 +293,8 @@ export class State extends EventTarget {
 	static orphaned = Symbol("orphaned")
 	/** @typedef {State.dirty|State.clean|State.orphaned} state */
 
+	readOnly = true
+
 	static {
 		this.prototype[Symbol.for("nyooom:state")] = true
 	}
@@ -371,6 +373,8 @@ class WriteableState extends State {
 		super()
 		this[valueKey] = value
 	}
+
+	readOnly = false
 
 	/** @param {T} value */
 	set value(value) {
