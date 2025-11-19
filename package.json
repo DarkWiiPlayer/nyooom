@@ -4,7 +4,8 @@
 	"author": "darkwiiplayer",
 	"license": "Unlicense",
 	"exports": {
-		"./render": "./render.js"
+		"./render": "./render.js",
+		"./observable": "./observable.js"
 	},
 	"type": "module",
 	"repository": {
