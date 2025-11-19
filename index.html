@@ -2,23 +2,22 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width">
 
-	<script type="module" src="https://cdn.jsdelivr.net/gh/darkwiiplayer/components@master/TypeWriter.js"></script>
-
 	<script type="importmap">
 		{
 			"imports": {
-				"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@d457c38/render.js",
-				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@d457c38/observable.js",
+				"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@514648f/render.js",
+				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@514648f/observable.js",
+				"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@514648f/domProxy.js",
 				"nyooom/showcase": "./js/nyooom-showcase.js"
 			}
 		}
 	</script>
 
+	<script type="module" src="https://cdn.jsdelivr.net/gh/darkwiiplayer/components@master/TypeWriter.js"></script>
+
 	<style>
 		@import
-		/* url('https://cdn.jsdelivr.net/gh/darkwiiplayer/css@main/all.css') */
-		url('https://darkwiiplayer.github.io/css/all.css') layer(framework);
-		/* url('https://cdn.jsdelivr.net/gh/darkwiiplayer/css@main/schemes/talia.css') */
+		url('https://cdn.jsdelivr.net/gh/darkwiiplayer/css@71ab804/all.css') layer(framework);
 		@import url('styles.css') layer(site);
 
 		.jsdelivr-badge {
@@ -99,8 +98,15 @@
 				<h2>Elevator Pitch</h2>
 
 				<p class="big">
-					Nyooom combines <em>easy</em> and <em>powerful</em> HTML generation with optional <em>reactivity</em>, all in plain JavaScript.
+					Nyooom provides <em>easy</em> yet <em>powerful</em> HTML generation with optional <em>reactivity</em>, with the following priorities:
 				</p>
+
+				<ul class="big">
+					<li> <b>Small & independent modules</b> that can be used separately
+					<li> <b>Gradual adoption</b> without requiring full application rewrites
+					<li> <b>Minimal abstraction</b> over native browser APIs
+					<li> <b>Extensibility</b> for custom use cases
+				</ul>
 
 				<nyooom-showcase preview=false>
 <code><div contenteditable="false">return html.p(
@@ -113,15 +119,9 @@
 
 				<vertical-spacer></vertical-spacer>
 
-				<p>
-					Nyooom is <em>small</em> enough that you can use it even if you only need it in a single function,
-					<em>obvious</em> enough to figure out what's going on even if you've never used it,
-					<em>powerful</em> enough that you won't <i>need</i> another framework and
-					<em>flexible</em> enough to let you use one regardless.
-				</p>
-
-				<p>
-					If that sounds good, it's time to back up those claims!
+				<p class="big">
+					If that sounds good, it's time to <b>back up those claims</b>!<br>
+					Keep scrolling to see how it works.
 				</p>
 			</div>
 		</section>
@@ -135,6 +135,10 @@
 				</p>
 
 				<pre class="box"><code lang=js>import {html} from "https://cdn.jsdelivr.net/npm/nyooom/nyooom.js"</code></pre>
+				
+				<p>Or, if you want to use <a href="#importmaps-snippet">import maps</a>:</p>
+
+				<pre class="box"><code lang=js>import {html} from "nyooom/nyooom"</code></pre>
 			</section>
 
 			<section>
@@ -155,14 +159,29 @@
 					Just pass it a function that returns some DOM nodes, and it'll register a custom element for you.
 				</p>
 
-				<pre class="box"><code lang=js>import {component} from "https://cdn.jsdelivr.net/npm/nyooom/observable.js"
+				<pre class="box"><code lang=js>import {component} from "nyooom/observable"
 const myComponent = () =&gt; html.div("Rendered Component")
 component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 
 				<p>
 					Of course, you can also just call <code lang=js>document.body.append(html.span("My Text"))</code> in your script.
 				</p>
+
+				<p>And if you'd like to use <code>importmaps</code> to de-clutter your code, here's a convenient template:</p>
+
+<pre class="box" id="importmaps-snippet"><code lang="html">&lt;script type="importmap"&gt;
+	{
+		"imports": {
+			"nyooom/render": "https://cdn.jsdelivr.net/npm/nyooom/render.js",
+			"nyooom/observable": "https://cdn.jsdelivr.net/npm/nyooom/observable.js",
+			"nyooom/domProxy": "https://cdn.jsdelivr.net/npm/nyooom/domProxy.js",
+		}
+	}
+&lt;/script&gt;</code></pre>
 			</section>
+
+			<p>Alternatively, you can use this JSFiddle as a playground</p>
+			<script async src="//jsfiddle.net/darkwiiplayer/cg5orayp/73/embed/js,result/dark/"></script>
 		</section>
 
 		<section class="content-width">
@@ -312,28 +331,28 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 		<section class="content-width">
 			<h2>State changes in Nyooom</h2>
 
-			<pre class="box"><code lang=js>import {ObservableObject} from 'nyooom/observable'</code></pre>
+			<pre class="box"><code lang=js>import {Observable, State} from 'nyooom/observable'</code></pre>
 
 			<p>
-				Nyooom offers a series of state management classes it calls "observables".
+				Nyooom offers two types of state containers: States and Observables.
 				Their purpose is to store one or more values and emit events when they are changed.
 			</p>
 
 			<p>
-				The <code>render.js</code> library handles observables by setting DOM nodes up to
+				The <code>render.js</code> library handles <code>State</code>s by setting DOM nodes up to
 				get updated when the observable emits a change event. Neihter module depends on the other
 				and they use a common protocol to work together.
 			</p>
 
 			<nyooom-showcase code="false">
 				<code>
-<div contenteditable="false">const counter = new State(0)
+<div contenteditable="false">const counter = State.value(0)
 
 return html.buttonGroup(
 	html.button(
-		"Click Me! ",
+		"Click Me!",
 		html.span(
-			counter.compose(val =&gt; val ? val : "")
+			counter.compute(val =&gt; val ? ` ${val}` : "")
 		),
 		{
 			click() {
@@ -396,6 +415,49 @@ return todo = html.flexColumn(
 				input.value ||
 				input.placeholder
 			))
+		}
+	})
+)</div>
+				</code>
+			</nyooom-showcase>
+
+<p>And here, just for fun, the same thing but using <code>DomProxy.domArray</code> to handle the list.</p>
+
+			<nyooom-showcase code="false">
+				<code>
+<div contenteditable="false">
+const TaskList = domArray({
+	new(text) {
+		return html.li(text, html.button({
+			class: "close",
+			click({target}) { target.closest("li").remove() }
+		}))
+	},
+	get() { return this.innerText }
+})
+
+const list = html.ul()
+const todo = TaskList(list)
+
+todo.push("Start using nyooom")
+
+let input
+return html.flexColumn(
+	{gap: 1},
+	input = html.input({
+		type: "text",
+		placeholder:
+			"Do some stuff",
+	}),
+	html.button("Add Task", {
+		click() {
+			todo.push(input.value || input.placeholder)
+		}
+	}),
+	list,
+	html.button("Show List", {
+		click() {
+			alert(todo.map(t => `- ${t}`).join("\n"))
 		}
 	})
 )</div>

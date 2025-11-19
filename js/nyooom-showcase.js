@@ -1,5 +1,6 @@
-import {html,nothing} from "nyooom/render"
-import {ObservableValue,ObservableObject} from "nyooom/observable"
+import {html, nothing} from "nyooom/render"
+import {Observable, State} from "nyooom/observable"
+import {domArray} from "nyooom/domProxy"
 import element from "https://darkwiiplayer.github.io/easier-elements-js/easier-elements.js"
 import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js';
 import lang_html from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/xml.min.js"
@@ -92,9 +93,11 @@ element(class NyooomShowcase extends HTMLElement {
 
 	render() {
 		const code = this.querySelector("code").innerText
+		const imports = { html, nothing, Observable, State, domArray }
+		const [names, values] = [0,1].map(index => Object.entries(imports).map(pair => pair[index]))
 		try {
-			const fn = new Function("html", "empty", "State", code)
-			const result = fn(html, nothing, ObservableValue)
+			const fn = new Function(...names, code)
+			const result = fn(...values)
 			this.error.replaceChildren()
 			this.output.innerHTML = hljs.highlight("html", result.outerHTML).value
 			this.preview.classList.toggle("hidden", this.getAttribute("preview") === "false")
