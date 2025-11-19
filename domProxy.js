@@ -13,7 +13,7 @@ export const domArray = (methods, extra) => {
 				}
 			} else if (prop.match?.call(prop, /^[0-9]+$/)) {
 				const child = target.children[prop]
-				if (child) return methods.get.call(child)
+				if (child && methods.get) return methods.get.call(child)
 				return child
 			} else {
 				return Array.prototype[prop]
