@@ -9,10 +9,11 @@ const kebabToCamel = string => string.replace(/([a-z])-([a-z])/g, (_, a, b) => a
 
 /**
  * @typedef {Object} Change
- * @property {string} property
+ * @property {string|symbol} property
  * @property {any} from
  * @property {any} to
  * @property {boolean} mutation - The change happened inside the value without a new assignment
+ * @property {any} source - The source that caused the change (usually the object setting the value)
  */
 
 /* Custom Event Classes */
@@ -27,10 +28,10 @@ export class ChangeEvent extends Event {
 }
 
 /** Event fired for one or more changed values after the internal state has been updated. */
-export class ChangesEvent extends Event {
+export class ChangedEvent extends Event {
 	/** @param {Change[]} changes */
 	constructor(...changes) {
-		super('changes')
+		super('changed')
 		this.changes = changes
 	}
 
@@ -67,6 +68,12 @@ export class Observable extends EventTarget {
 
 	static get new() { throw new Error("Attempting to call 'new' as a class method; this is JavaScript, you absolute imbecile!") }
 
+	/** @type {Object} */
+	#target
+
+	/** @type {Boolean} */
+	#trackChildren = false
+
 	/**
 	 * @param {Object} target
 	 * @param {Options} options
@@ -74,31 +81,23 @@ export class Observable extends EventTarget {
 	constructor(target={}, {children=false, same}={}) {
 		super()
 
+		this.#trackChildren = children
+		this.#target = target
+		if (typeof same === "function") this.same = same
+
 		abortRegistry.register(this, this.#abortController)
 
 		Object.defineProperty(this, "target", target)
 
 		this.values = new Proxy(target, {
 			/**
-			 * @param {Object} target
-			 * @param {String} property
+			 * @param {Object} _
+			 * @param {string|symbol} property
 			 * @param {any} value
+			 * @param {Proxy} receiver
 			 */
-			set: (target, property, value) => {
-				const old = target[property]
-
-				if (same ? !same(old, value) : (old !== value)) {
-					if (this.enqueue({property, from: old, to: value, mutation: false})) {
-						if (children) {
-							if (old instanceof Observable) this.disown(property, old)
-							if (value instanceof Observable) this.adopt(property, value)
-						}
-						target[property] = value
-					} else {
-						return false
-					}
-				}
-				return true
+			set: (_, property, value, receiver) => {
+				return this.set(property, value, receiver)
 			}
 		})
 
@@ -107,6 +106,38 @@ export class Observable extends EventTarget {
 				throw new TypeError(`Attempting to set property ${String(prop)} on read-only values proxy`)
 			}
 		})
+	}
+
+	/**
+	 * @param {any} a
+	 * @param {any} b
+	 */
+	same(a, b) { return a === b }
+
+	/**
+	 * @param {string|symbol} property
+	 * @param {any} value
+	 * @param {any} source
+	 */
+	set(property, value, source) {
+		const target = this.#target
+
+		if (source === undefined) console.warn(`Setting property '${String(property)}' on State without a source:`, {observable: this, value})
+
+		const old = target[property]
+
+		if (!this.same(old, value)) {
+			if (this.enqueue({property, from: old, to: value, mutation: false, source})) {
+				if (this.#trackChildren) {
+					if (old instanceof Observable) this.disown(property, old)
+					if (value instanceof Observable) this.adopt(property, value)
+				}
+				target[property] = value
+			} else {
+				return false
+			}
+		}
+		return true
 	}
 
 	#microTaskQueued = false
@@ -130,15 +161,17 @@ export class Observable extends EventTarget {
 
 	/** @param {Change[]} changes */
 	emit(changes) {
-		this.dispatchEvent(new ChangesEvent(...changes))
+		this.dispatchEvent(new ChangedEvent(...changes))
 
 		if (this.#states.size || this.#promises.size) {
 			for (const change of changes) {
 				const {property} = change
 
 				if (this.#states.has(property)) {
-					const pair = this.#states.get(property)
-					pair.update(change.to)
+					const state = this.#states.get(property)
+					if (change.source !== state) {
+						state.update(change.to, this)
+					}
 				}
 
 				if (this.#promises.has(property)) {
@@ -164,11 +197,11 @@ export class Observable extends EventTarget {
 	/** @type {Number} */
 	get changesQueued() { return this.#queue.length }
 
-	/** @type Map<Observable, Map<String, EventListener>> */
+	/** @type Map<Observable, Map<string|symbol, EventListener>> */
 	#nested = new Map()
 
 	/** Adopts an observable to be notified of its changes
-	 * @param {string} property
+	 * @param {string|symbol} property
 	 * @param {Observable} observable
 	 */
 	adopt(property, observable) {
@@ -181,14 +214,14 @@ export class Observable extends EventTarget {
 
 		const ref = this.ref
 
-		const handler = () => ref.deref()?.enqueue({property, from: observable, to: observable, mutation: true})
+		const handler = () => ref.deref()?.enqueue({property, from: observable, to: observable, mutation: true, source: observable})
 
 		handlers.set(property, handler)
 		observable.addEventListener("changed", handler, {signal: this.collectedSignal})
 	}
 
 	/** Undoes the adoption of a nested observable, cancelling the associated event hook
-	 * @param {string} property
+	 * @param {string|symbol} property
 	 * @param {Observable} observable
 	 */
 	disown(property, observable) {
@@ -203,11 +236,11 @@ export class Observable extends EventTarget {
 		}
 	}
 
-	/** @type {Map<String,{promise: Promise, callback: (value: any)=>void}>} */
+	/** @type {Map<string|symbol,{promise: Promise, callback: (value: any)=>void}>} */
 	#promises = new Map()
 	// Can't be weak refs because promises are often given callbacks and then forgotten
 
-	/** @param {String} property */
+	/** @param {string|symbol} property */
 	when(property) {
 		const cached = this.#promises.get(property)
 		if (cached) return cached[0]
@@ -220,21 +253,38 @@ export class Observable extends EventTarget {
 		return promise
 	}
 
-	/** @type {Map<String,readOnlyPair<any>>} */
+	/** @type {Map<string|symbol,WriteableState>} */
 	#states = new Map()
 
-	/** @param {String} property */
+	/** @param {string|symbol} property */
 	state(property) {
 		const cached = this.#states.get(property)
 		if (cached) return cached
 
-		const pair = State.readOnly(this.values[property])
-		this.#states.set(property, pair)
-		return pair.state
+		const state = State.value(this.values[property])
+		this.#states.set(property, state)
+
+		/** @param {StateChangedEvent} event */
+		const handler = event => {
+			if (this !== event.source) {
+				this.set(property, state.value, state)
+			}
+		}
+		state.addEventListener("changed", handler)
+
+		return state
 	}
 }
 
 const valueKey = Symbol("value")
+
+class StateChangedEvent extends Event {
+	/** @param {any} source */
+	constructor(source) {
+		super("changed")
+		this.source = source
+	}
+}
 
 /** @template T */
 export class State extends EventTarget {
@@ -242,6 +292,10 @@ export class State extends EventTarget {
 	static clean = Symbol("clean")
 	static orphaned = Symbol("orphaned")
 	/** @typedef {State.dirty|State.clean|State.orphaned} state */
+
+	static {
+		this.prototype[Symbol.for("nyooom:state")] = true
+	}
 
 	/**
 	 * @template G
@@ -253,7 +307,7 @@ export class State extends EventTarget {
 	static compute(fn) { return (...inputs) => new ComputedState(fn, ...inputs) }
 
 	/** @template G
-	 * @typedef {{state: State<G>, update: (value: G)=>void}} readOnlyPair
+	 * @typedef {{state: State<G>, update: (value: G, source: any)=>void}} readOnlyPair
 	 */
 
 	/**
@@ -265,10 +319,13 @@ export class State extends EventTarget {
 		/** @type {State<G>} */
 		const state = new State()
 		state[valueKey] = value
-		/** @param {G} newValue */
-		const update = newValue => {
+		/**
+		 * @param {G} newValue
+		 * @param {any} source
+		 * */
+		const update = (newValue, source) => {
 			state[valueKey] = newValue
-			state.notifyChange()
+			state.notifyChange(source)
 		}
 		return {state, update}
 	}
@@ -294,8 +351,9 @@ export class State extends EventTarget {
 		return this[valueKey]
 	}
 
-	notifyChange() {
-		this.dispatchEvent(new CustomEvent("change"))
+	/** @param {any} source */
+	notifyChange(source) {
+		this.dispatchEvent(new StateChangedEvent(source))
 	}
 
 	/** @return {state} */
@@ -316,9 +374,24 @@ class WriteableState extends State {
 
 	/** @param {T} value */
 	set value(value) {
+		this.update(value)
+	}
+
+	// Doesn't get inherited.
+	// mabe the setter overwrites the entire inherited property?
+	/** @return {T} */
+	get value() {
+		return this[valueKey]
+	}
+
+	/**
+	 * @param {T} value
+	 * @param {any} source
+	 */
+	update(value, source) {
 		if (value !== this[valueKey]) {
 			this[valueKey] = value
-			this.notifyChange()
+			this.notifyChange(source)
 		}
 	}
 }
@@ -363,7 +436,10 @@ class ComputedState extends State {
 		this.#fn = fn
 		this.#values = new Array(inputs.length)
 		this.#inputs = inputs.map(input => {
-			input.addEventListener("change", () => { this.setDirty() }, eventParams)
+			/** @param {StateChangedEvent} event */
+			const callback = event => { this.setDirty(event.source) }
+
+			input.addEventListener("changed", callback, eventParams)
 			if (input instanceof ComputedState) {
 				const ref = new RevocableRef(input)
 				input.addEventListener("orphaned", () => {
@@ -392,9 +468,10 @@ class ComputedState extends State {
 		return true
 	}
 
-	setDirty() {
+	/** @param {any} source */
+	setDirty(source) {
 		this.#state = State.dirty
-		this.notifyChange()
+		this.notifyChange(source)
 	}
 
 	get state() { return this.#state }
@@ -461,7 +538,7 @@ export const component = (name, generator, methods) => {
 			this.state = new Observable(target)
 
 			this.state.addEventListener("changed", event => {
-				if (event instanceof ChangesEvent)
+				if (event instanceof ChangedEvent)
 					for (const {property, to: value} of event.changes) {
 						const kebabName = camelToKebab(property)
 						if (this.getAttribute(kebabName) !== String(value))

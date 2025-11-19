@@ -36,7 +36,7 @@ const snakeToHTML = key => key.replace(/([A-Z])/g, "-$1").replace(/^-/, "").toLo
  * @property {function(Node):boolean} [filter]
  */
 
-/** @typedef {EventTarget & {value: any}} Observable */
+/** @typedef {EventTarget & {value: any, update: (value:any, source:any)=>void}} State */
 
 /** Cancelable event triggered when a reactive element gets replaced with something else */
 export class BeforeReplaceEvent extends Event {
@@ -94,8 +94,17 @@ export const noDefault = fn => event => { event.preventDefault(); return fn(even
  */
 export const noPropagate = fn => event => { event.stopPropagation(); return fn(event) }
 
+/**
+ * @typedef {object} RenderProxy
+ */
+
 /** Main class doing all the rendering */
 export class Renderer {
+	/** @type {RenderProxy}
+	 * @protected
+	 */
+	static _proxy
+
 	static get proxy() {
 		return this._proxy ??= new Proxy(new this(), {
 			/** @param {string} prop */
@@ -103,6 +112,11 @@ export class Renderer {
 			has: (renderer, prop) => renderer.nodeSupported(prop),
 		})
 	}
+
+	/** @type {unknown}
+	 * @protected
+	 */
+	static _wrapper
 
 	static get wrapper() {
 		return this._wrapper ??= (callback => {
@@ -207,21 +221,21 @@ export class DomRenderer extends Renderer {
 			return document.createTextNode(value.toString())
 		else if (value instanceof Element)
 			return value
-		else if (this.isObservable(value))
+		else if (this.isState(value))
 			return this.toReactiveElement(value)
 	}
 
 	/**
 	 * @protected
-	 * @param {Observable} observable
+	 * @param {State} state
 	 * @return {Element|Text}
 	 */
-	static toReactiveElement(observable) {
-		if (observable.value instanceof DocumentFragment) {
+	static toReactiveElement(state) {
+		if (state.value instanceof DocumentFragment) {
 			throw "Failed to create reactive element: Document fragments cannot be replaced dynamically"
 		}
-		const element = this.toElement(observable.value) || document.createComment("Reactive element Placeholder")
-		untilDeathDoThemPart(element, observable)
+		const element = this.toElement(state.value) || document.createComment("Reactive element Placeholder")
+		untilDeathDoThemPart(element, state)
 		let ref = new WeakRef(element)
 
 		const handleChange = () => {
@@ -229,17 +243,17 @@ export class DomRenderer extends Renderer {
 
 			if (!element) return
 
-			const next = this.toElement(observable.value)
+			const next = this.toElement(state.value)
 			if (element?.dispatchEvent(new BeforeReplaceEvent(next))) {
 				element.replaceWith(next)
 				next.dispatchEvent(new ReplacedEvent(element))
-				untilDeathDoThemPart(next, observable)
+				untilDeathDoThemPart(next, state)
 				element.dispatchEvent(new AfterReplaceEvent(next))
 				ref = new WeakRef(next)
 			}
-			observable.addEventListener("changed", handleChange, {once: true})
+			state.addEventListener("changed", handleChange, {once: true})
 		}
-		observable.addEventListener("changed", handleChange, {once: true})
+		state.addEventListener("changed", handleChange, {once: true})
 
 		return element
 	}
@@ -254,7 +268,7 @@ export class DomRenderer extends Renderer {
 	static setAttribute(element, attribute, value, cleanupSignal) {
 		const special = this.getSpecialAttribute(element, attribute)
 
-		if (this.isObservable(value))
+		if (this.isState(value))
 			{ this.setReactiveAttribute(element, attribute, value) }
 		else if (typeof value === "function")
 			element.addEventListener(attribute, value, { signal: cleanupSignal })
@@ -269,28 +283,28 @@ export class DomRenderer extends Renderer {
 		}
 	}
 
-	/** Set up a binding between an attribute and an observable
+	/** Set up a binding between an attribute and a state
 	 * @protected
 	 * @param {Element} element
 	 * @param {string} attribute
-	 * @param {Observable} observable
+	 * @param {State} state
 	 */
-	static setReactiveAttribute(element, attribute, observable) {
+	static setReactiveAttribute(element, attribute, state) {
 		const multiAbort = new MultiAbortController()
 
-		observable.addEventListener("changed", () => {
+		state.addEventListener("changed", () => {
 			multiAbort.abort()
-			if (element.dispatchEvent(new AttributeEvent(attribute, element.getAttribute(attribute), observable.value)))
-				this.setAttribute(element, attribute, observable.value, multiAbort.signal)
+			if (element.dispatchEvent(new AttributeEvent(attribute, element.getAttribute(attribute), state.value)))
+				this.setAttribute(element, attribute, state.value, multiAbort.signal)
 		})
-		this.setAttribute(element, attribute, observable.value, multiAbort.signal)
+		this.setAttribute(element, attribute, state.value, multiAbort.signal)
 
 		const special = this.getSpecialAttribute(element, attribute)
 
 		if (special?.subscribe) {
-			untilDeathDoThemPart(element, observable)
+			untilDeathDoThemPart(element, state)
 			special.subscribe(element, value => {
-				if (value != observable.value) observable.value = value
+				if (value != state.value) state.update(value, this)
 			})
 		}
 	}
@@ -307,12 +321,12 @@ export class DomRenderer extends Renderer {
 				style.setProperty(snakeToCSS(key), value.toString())
 	}
 
-	/** Returns whether an object is an observable according to nyooom's contract
+	/** Returns whether an object is a state according to nyooom's contract
 	 * @param {any} object
-	 * @return {object is Observable}
+	 * @return {object is State}
 	 */
-	static isObservable(object) {
-		return object && object.observable
+	static isState(object) {
+		return object && object[Symbol.for("nyooom:state")]
 	}
 
 	/** Wraps a list of elements in a document fragment
@@ -383,7 +397,13 @@ export class DomHtmlRenderer extends DomRenderer {
 	static specialAttributes = {
 		value: {
 			/** @param {HTMLInputElement} element */
-			get(element) { return element.value },
+			get(element) {
+				if (element.type === "number") {
+					return element.valueAsNumber
+				} else {
+					return element.value
+				}
+			},
 			/** @param {HTMLInputElement} element */
 			set(element, value) {
 				element.setAttribute("value", value)
