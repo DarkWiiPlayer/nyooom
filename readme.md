@@ -1,5 +1,7 @@
 # Nyooom
 
+A lean and hackable front-end micro-framework
+
 ```js
 import {html} from "nyooom/render"
 import {Observable} from "nyooom/observable"
