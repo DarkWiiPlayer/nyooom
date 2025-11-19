@@ -308,6 +308,13 @@ export class State extends EventTarget {
 
 	static compute(fn) { return (...inputs) => new ComputedState(fn, ...inputs) }
 
+	/**
+	 * @template G
+	 * @param {(value: T) => G} fn
+	 * @return {ComputedState<G>}
+	 */
+	compute(fn) { return new ComputedState(fn, this) }
+
 	/** @template G
 	 * @typedef {{state: State<G>, update: (value: G, source: any)=>void}} readOnlyPair
 	 */
