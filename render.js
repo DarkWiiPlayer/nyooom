@@ -36,7 +36,7 @@ const snakeToHTML = key => key.replace(/([A-Z])/g, "-$1").replace(/^-/, "").toLo
  * @property {function(Node):boolean} [filter]
  */
 
-/** @typedef {EventTarget & {value: any, update: (value:any, source:any)=>void}} State */
+/** @typedef {EventTarget & {value: any, update: (value:any, source:any)=>void, readOnly: Boolean}} State */
 
 /** Cancelable event triggered when a reactive element gets replaced with something else */
 export class BeforeReplaceEvent extends Event {
@@ -302,10 +302,16 @@ export class DomRenderer extends Renderer {
 		const special = this.getSpecialAttribute(element, attribute)
 
 		if (special?.subscribe) {
-			untilDeathDoThemPart(element, state)
-			special.subscribe(element, value => {
-				if (value != state.value) state.update(value, this)
-			})
+			if (state.readOnly) {
+				special.subscribe(element, value => {
+					if (value != state.value) console.warn(`Property '${attribute}' changed on element but bound state is read-only`, element, state)
+				})
+			} else {
+				untilDeathDoThemPart(element, state)
+				special.subscribe(element, value => {
+					if (value != state.value) state.update(value, this)
+				})
+			}
 		}
 	}
 
