@@ -1,5 +1,5 @@
-export const domArray = (methods, extra) => {
-	if (extra) return domArray(extra)(methods)
+export const array = (methods, extra) => {
+	if (extra) return array(extra)(methods)
 
 	const traps = {
 		get(target, prop) {
@@ -27,13 +27,16 @@ export const domArray = (methods, extra) => {
 					return true
 				} else {
 					for (let i = target.children.length; i < Number(prop); i++) {
-						target.appendChild(methods.new(undefined))
+						target.appendChild(methods.new())
 					}
 					const element = methods.new(value)
 					target.appendChild(element)
-					if (methods.get.call(element) !== value)
+					if (methods.get.call(element) !== value) {
 						methods.set.call(element, value)
-					return true
+						return true
+					} else {
+						return false
+					}
 				}
 			} else if (prop == "length") {
 				if (value == target.children.length)
@@ -55,12 +58,12 @@ export const domArray = (methods, extra) => {
 	}
 
 	return element => {
-		if (!(element instanceof Element)) throw(new Error("Creating domArray on non-element"))
+		if (!(element instanceof Element)) throw(new Error("Creating DOM-Array on non-element"))
 		return new Proxy(element, traps)
 	}
 }
 
-export const meta = (element=document.head) => new Proxy(element, {
+export const meta = (element = document.head) => new Proxy(element, {
 	get: (target, name) => target.querySelector(`meta[name="${name}"]`)?.content,
 	set: (target, name, value) => {
 		let meta = target.querySelector(`meta[name="${name}"]`)
@@ -70,5 +73,12 @@ export const meta = (element=document.head) => new Proxy(element, {
 			target.append(meta)
 		}
 		meta.content = value
+		return true
+	}
+	deleteProperty(target, prop) {
+		for (const meta of target.querySelectorAll(`meta[name="${name}"]`)) {
+			meta.remove()
+		}
+		return true
 	}
 })
