@@ -17,7 +17,7 @@
 
 	<style>
 		@import
-		url('https://cdn.jsdelivr.net/gh/darkwiiplayer/css@71ab804/all.css') layer(framework);
+		url('https://cdn.jsdelivr.net/gh/darkwiiplayer/css@a3c3a0f/all.css') layer(framework);
 		@import url('styles.css') layer(site);
 
 		.jsdelivr-badge {
@@ -61,12 +61,16 @@
 		<nav class="bar">
 			<ul>
 				<li><a href="#top">Top</a></li>
-				<li><a href="https://git.but.gay/darkwiiplayer/nyooom">Git</a></li>
+				<li><a href="#rendering">Rendering</a></li>
+				<li><a href="#observable">Reactivity</a></li>
+				<li><a href="#dom-proxy">DOM-Proxies</a></li>
+				<li><a href="https://git.but.gay/darkwiiplayer/nyooom">Repository</a></li>
 				<li><a href="https://github.com/darkwiiplayer/nyooom">Github</a></li>
 				<li><a href="https://www.npmjs.com/package/nyooom">npm</a></li>
 			</ul>
 		</nav>
 		<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/npm/nyooom/badge">
+		<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/github/darkwiiplayer/nyooom/badge">
 	</header>
 
 	<page-hero role="banner" cover=60>
@@ -98,7 +102,7 @@
 				<h2>Elevator Pitch</h2>
 
 				<p class="big">
-					Nyooom provides <em>easy</em> yet <em>powerful</em> HTML generation with optional <em>reactivity</em>, with the following priorities:
+					Nyooom provides <em>easy</em> yet <em>powerful</em> HTML generation, DOM manipulation and optional <em>reactivity</em>, with the following priorities:
 				</p>
 
 				<ul class="big">
@@ -184,8 +188,10 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 			<script async src="//jsfiddle.net/darkwiiplayer/cg5orayp/73/embed/js,result/dark/"></script>
 		</section>
 
-		<section class="content-width">
+		<section id="rendering" class="content-width">
 			<h2>Basic DOM generation</h2>
+
+			<p class="box" stripe="color">The <a href="https://git.but.gay/darkwiiplayer/nyooom/src/branch/main/documentation/render.md">full documentation</a> of the <code>render</code> class is hosted in the repository.</p>
 
 			<section>
 				<p>
@@ -328,8 +334,10 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 			</nyooom-showcase>
 		</section>
 
-		<section class="content-width">
-			<h2>State changes in Nyooom</h2>
+		<section id="observable" class="content-width">
+			<h2>Reactivity with Observables</h2>
+
+			<p class="box" stripe="color">The <a href="https://git.but.gay/darkwiiplayer/nyooom/src/branch/main/documentation/observable.md">full documentation</a> of the <code>observable</code> module is hosted in the repository.</p>
 
 			<pre class="box"><code lang=js>import {Observable, State} from 'nyooom/observable'</code></pre>
 
@@ -380,48 +388,6 @@ return html.buttonGroup(
 				This simple ToDo component uses nothing more than Nyooom and
 				the stylesheets already on this page to save some boilerplate.
 			</p>
-
-			<nyooom-showcase code="false">
-				<code>
-<div contenteditable="false">const task = value => 
-html.flexRow (
-	{class: "todo", gap: 1},
-	value,
-	html.span("[x]", {
-		style: {
-			color: "var(--primary-6)",
-			cursor: "pointer"
-		},
-		click(event) {
-			event
-				.target
-				.closest(".todo")
-				.remove()
-		}
-	})
-)
-let todo, input
-return todo = html.flexColumn(
-	{gap: 1},
-	input = html.input({
-		type: "text",
-		placeholder:
-			"Do some stuff",
-	}),
-	html.button("Add Task",
-	{
-		click() {
-			todo.append(task(
-				input.value ||
-				input.placeholder
-			))
-		}
-	})
-)</div>
-				</code>
-			</nyooom-showcase>
-
-<p>And here, just for fun, the same thing but using <code>DomProxy.domArray</code> to handle the list.</p>
 
 			<nyooom-showcase code="false">
 				<code>
