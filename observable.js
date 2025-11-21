@@ -297,9 +297,13 @@ export class Observable extends EventTarget {
 const valueKey = Symbol("value")
 
 class StateChangedEvent extends Event {
-	/** @param {any} source */
-	constructor(source) {
+	/**
+	 * @param {any} value
+	 * @param {any} source
+	 */
+	constructor(value, source) {
 		super("changed")
+		this.value = value
 		this.source = source
 	}
 }
@@ -331,7 +335,7 @@ export class State extends EventTarget {
 	 * @param {(value: T) => G} fn
 	 * @return {ComputedState<G>}
 	 */
-	compute(fn) { return new ComputedState(fn, this) }
+	map(fn) { return new ComputedState(fn, this) }
 
 	/** @type {AbortSignal} */
 	collectedSignal
@@ -356,7 +360,7 @@ export class State extends EventTarget {
 
 	/** @param {any} source */
 	notifyChange(source) {
-		this.dispatchEvent(new StateChangedEvent(source))
+		this.dispatchEvent(new StateChangedEvent(this.value, source))
 	}
 
 	/** @return {state} */
