@@ -143,6 +143,7 @@ export class Observable extends EventTarget {
 	#microTaskQueued = false
 	/** Queues up a change event
 	 * @param {Change} change
+	 * @protected
 	 */
 	enqueue(change) {
 		if (!this.dispatchEvent(new ChangeEvent(change))) return false
@@ -159,28 +160,51 @@ export class Observable extends EventTarget {
 		return true
 	}
 
-	/** @param {Change[]} changes */
+	/**
+	 * @param {Change[]} changes
+	 * @protected
+	 */
 	emit(changes) {
-		this.dispatchEvent(new ChangedEvent(...changes))
+		const consolidated = this.consolidate(changes)
+		this.dispatchEvent(new ChangedEvent(...consolidated))
 
 		if (this.#states.size || this.#promises.size) {
-			for (const change of changes) {
+			const lastForPromises = {}
+			const lastForStates = {}
+
+			for (const change of consolidated) {
 				const {property} = change
 
 				if (this.#states.has(property)) {
-					const state = this.#states.get(property)
-					if (change.source !== state) {
-						state.update(change.to, this)
-					}
+					lastForStates[property] = change.to
 				}
 
 				if (this.#promises.has(property)) {
-					const {callback} = this.#promises.get(property)
-					this.#promises.delete(property)
-					callback(change)
+					lastForPromises[property] = change.to
 				}
 			}
+
+			for (const [property] of Object.entries(lastForStates)) {
+				this.#states.get(property).notifyChange(this)
+			}
+
+			for (const [property, value] of Object.entries(lastForPromises)) {
+				const {callback} = this.#promises.get(property)
+				this.#promises.delete(property)
+				callback(value)
+			}
 		}
+	}
+
+	/** Override this method in subclasses to filter changes
+	 * before dispatching an event, for example by dropping
+	 * insignificant changes or even adding new ones.
+	 * This method is allowed to mutate the input array.
+	 * @param {Change[]} changes
+	 * @return {Change[]}
+	 */
+	consolidate(changes) {
+		return changes
 	}
 
 	/** Synchronously emits an event with all queued changes. Does nothing when there are no events. */
@@ -203,6 +227,7 @@ export class Observable extends EventTarget {
 	/** Adopts an observable to be notified of its changes
 	 * @param {string|symbol} property
 	 * @param {Observable} observable
+	 * @protected
 	 */
 	adopt(property, observable) {
 		let handlers = this.#nested.get(observable)
@@ -223,6 +248,7 @@ export class Observable extends EventTarget {
 	/** Undoes the adoption of a nested observable, cancelling the associated event hook
 	 * @param {string|symbol} property
 	 * @param {Observable} observable
+	 * @protected
 	 */
 	disown(property, observable) {
 		const handlers = this.#nested.get(observable)
@@ -257,20 +283,12 @@ export class Observable extends EventTarget {
 	#states = new Map()
 
 	/** @param {string|symbol} property */
-	state(property) {
+	property(property, {readonly=false}={}) {
 		const cached = this.#states.get(property)
 		if (cached) return cached
 
-		const state = State.value(this.values[property])
+		const state = new PropertyState(this, property, {readonly})
 		this.#states.set(property, state)
-
-		/** @param {StateChangedEvent} event */
-		const handler = event => {
-			if (this !== event.source) {
-				this.set(property, state.value, state)
-			}
-		}
-		state.addEventListener("changed", handler)
 
 		return state
 	}
@@ -314,30 +332,6 @@ export class State extends EventTarget {
 	 * @return {ComputedState<G>}
 	 */
 	compute(fn) { return new ComputedState(fn, this) }
-
-	/** @template G
-	 * @typedef {{state: State<G>, update: (value: G, source: any)=>void}} readOnlyPair
-	 */
-
-	/**
-	 * @template G
-	 * @param {G} value
-	 * @return {readOnlyPair<G>}
-	 */
-	static readOnly(value) {
-		/** @type {State<G>} */
-		const state = new State()
-		state[valueKey] = value
-		/**
-		 * @param {G} newValue
-		 * @param {any} source
-		 * */
-		const update = (newValue, source) => {
-			state[valueKey] = newValue
-			state.notifyChange(source)
-		}
-		return {state, update}
-	}
 
 	/** @type {AbortSignal} */
 	collectedSignal
@@ -404,6 +398,57 @@ class WriteableState extends State {
 			this[valueKey] = value
 			this.notifyChange(source)
 		}
+	}
+}
+
+/**
+ * @template T
+ * @class WriteableState
+ * @extends State<T>
+ */
+export class PropertyState extends State {
+	/** @type {Observable} */
+	#observable
+
+	/** @type {string|symbol} */
+	#property
+
+	/** @type {boolean} */
+	#readonly = false
+
+	/**
+	 * @param {Observable} observable
+	 * @param {string|symbol} property
+	 */
+	constructor(observable, property, {readonly=false}={}) {
+		super()
+		this.#readonly = readonly
+		this.#observable = observable
+		this.#property = property
+	}
+
+	get readonly() { return this.#readonly }
+
+	/** @param {T} value */
+	set value(value) {
+		this.update(value)
+	}
+
+	// Doesn't get inherited.
+	// mabe the setter overwrites the entire inherited property?
+	/** @return {T} */
+	get value() {
+		return this.#observable.values[this.#property]
+	}
+
+	/**
+	 * @param {T} value
+	 */
+	update(value) {
+		if (this.#readonly) {
+			throw(new TypeError("Attempting to update a read-only state"))
+		}
+		this.#observable.set(this.#property, value, this)
 	}
 }
 
