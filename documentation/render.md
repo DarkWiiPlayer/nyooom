@@ -124,24 +124,24 @@ console.log(div.getAttribute("data-foo") === "bar")
 
 Nyooom supports reactivity through a simple protocol:
 
-Observable objects identify themselves with the `observable` attribute,
-which must return a truthy value.
+State objects identify themselves with the `Symbol.for("nyooom:state")`
+attribute, which must return a truthy value.
 
-Observables are expected to expose a `value` attribute that is both readable and writeable,
+States are expected to expose a `value` attribute that is both readable and writeable,
 and to emit a "change" event whenever its vale has changed.
 
-Observables can be passed to nyooom's node functions as both
+States can be passed to nyooom's node functions as both
 attribute values (values in an object) or
 child elements (direct arguments or in an array).
 
 #### Reactive Children
 
-Passing an observable as a child element will attempt to insert its current
+Passing a state as a child element will attempt to insert its current
 value into the new node as if it was passed in directly, but will also hook into
-the observable to replace the value when the state changes.
+the state to replace the value when the state changes.
 
 ```js
-const state = new Observable.value(0)
+const state = new State.value(0)
 
 const button = html.button(state, {
 	click(event) { state.value++ }
@@ -150,7 +150,7 @@ const button = html.button(state, {
 
 Note that to keep the replacement logic simple, it is not currently possible to
 insert use document fragments, as these could insert several top-level children
-into a component that would then all have to be replaced. When an observable
+into a component that would then all have to be replaced. When a state
 contains or changes to a document fragment, nyooom will raise an error.
 
 Before replacing an element, a `"replace"` event is emitted from the old
@@ -161,11 +161,11 @@ object instead of replacing it.
 
 #### Reactive Attributes
 
-Passing an observable as an object value will, likewise, treat its value as the
+Passing a state as an object value will, likewise, treat its value as the
 attribute value, and update it whenever the state's value changes.
 
 ```js
-const state = new Observable.value(0)
+const state = new State.value(0)
 
 const input_1 = html.input({ type: "number", value: state })
 const input_2 = html.input({ type: "number", value: state })
