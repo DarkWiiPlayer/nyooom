@@ -575,48 +575,65 @@ const attributeObserver = new MutationObserver(mutations => {
 	}
 })
 
-/**
- * @param {String} name
- * @param {(this: HTMLElement, state: Observable) => Node} generator
- * @param {Object<String,Function>} methods
- */
-export const component = (name, generator, methods) => {
-	if (typeof name === "function") {
-		methods = generator
-		generator = name
-		name = camelToKebab(generator.name)
+export class ReactiveElement extends HTMLElement {
+	constructor() {
+		super()
+		ReactiveElement.attachObserver(this)
 	}
 
-	const jsName = kebabToCamel(name)
-	component[jsName] = class extends HTMLElement{
-		/** @type {Observable} */
-		state
+	/**
+	 * @param {HTMLElement} element
+	 * @returns {Observable}
+	 */
+	static attachObserver(element) {
+		const target = Object.fromEntries([...element.attributes].map(attribute => [kebabToCamel(attribute.name), attribute.value]))
+		const observable = new Observable(target)
+		componentInstanceStates.set(element, observable)
+
+		observable.addEventListener("changed", event => {
+			if (event instanceof ChangedEvent)
+				for (const {property, to: value} of event.changes) {
+					if (typeof property == "string") {
+						const kebabName = camelToKebab(property)
+						if (element.getAttribute(kebabName) !== String(value))
+							element.setAttribute(kebabName, value)
+					}
+				}
+		})
+
+		attributeObserver.observe(element, {attributes: true})
+		return observable
+	}
+
+	get state() {
+		return componentInstanceStates.get(this)
+	}
+}
+
+/**
+ * @param {String} name
+ * @param {(this: HTMLElement, state: Observable) => Node} render
+ */
+export const component = (render, name) => {
+	const htmlName = camelToKebab(name ?? render.name)
+	const jsName = kebabToCamel(htmlName)
+
+	class Element extends ReactiveElement {
+		static {
+			Object.defineProperty(this, "name", {value: jsName})
+		}
+
+		render() {
+			const content = render.call(this, this.state)
+			if (content) this.replaceChildren(content)
+		}
 
 		constructor() {
 			super()
-			const target = Object.fromEntries([...this.attributes].map(attribute => [kebabToCamel(attribute.name), attribute.value]))
-			this.state = new Observable(target)
-
-			this.state.addEventListener("changed", event => {
-				if (event instanceof ChangedEvent)
-					for (const {property, to: value} of event.changes) {
-						const kebabName = camelToKebab(property)
-						if (this.getAttribute(kebabName) !== String(value))
-							this.setAttribute(kebabName, value)
-					}
-			})
-
-			attributeObserver.observe(this, {attributes: true})
-			const content = generator.call(this, this.state)
-			if (content) this.replaceChildren(content)
+			this.render()
 		}
 	}
 
-	const element = component[jsName]
-	if (methods) {
-		Object.defineProperties(element.prototype, Object.getOwnPropertyDescriptors(methods))
-	}
-
-	customElements.define(name, element)
-	return element;
+	customElements.define(htmlName, Element)
+	return Element
 }

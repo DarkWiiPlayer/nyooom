@@ -119,3 +119,41 @@ const number = State.value(10)
 
 const double = number.map(n => n*2)
 ```
+
+## Custom Elements
+
+The Observable module also exports a `ReactiveElement` class which inherits from
+`HTMLElement` but extends the constructor by creating a new `Observable` and
+linking it to the element's attributes using a `MutationObserver`.
+
+For even easier usage, it also exports the `element` function, which maps a
+render function to a reactive custom element class and registers it under the
+function's name converted to kebab-case.
+
+On creation, the element's content will be replaced with the result of the
+render function, unles it returns nothing. Re-rendering can be triggered
+manually by calling the `render` instance method.
+
+The `render` function is bound to the new element before calling, meaning arrow
+functions won't have access to the element during rendering. This is by design
+to encourage object-oriented functions when accessing the element is desired.
+
+```js
+	const nyooomCounter = state => fragment(
+		html.span(state.property("count")), " ",
+		html.button("Increase", {
+			click() { state.values.count++ }
+		})
+	)
+
+	component(nyooomCounter)
+```
+
+```html
+<nyooom-counter count="1"></nyooom-counter>
+```
+
+The logic to attach a state to an element is also exposed in the static method
+`ReactiveElement.attachObserver` which can be used in constructors of custom
+element classes that cannot inherit from `ReactiveElement` or even built-in
+elements. The method returns the ovservable.
