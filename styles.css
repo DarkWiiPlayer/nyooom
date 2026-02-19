@@ -1,5 +1,6 @@
 :root {
 	--corner-radius: 2px;
+	--color: hsl(190deg, 100%, 50%);
 }
 
 [contenteditable] { white-space: pre }
@@ -24,11 +25,11 @@ p.important {
 
 page-hero {
 	background-image:
-		radial-gradient(ellipse at 100% -40%, #fff0, #ccaaff06 70%, #fff0 70%),
-		radial-gradient(ellipse at -40% -20%, #fff0, #bb88ff02 60%, #fff0 60%),
-		radial-gradient(ellipse at 180% 180%, #fff0, #bb88ff02 60%, #fff0 60%),
-		linear-gradient(to top left, #a2f1, transparent),
-		linear-gradient(to top right, #c2d1, transparent);
+		radial-gradient(ellipse at 100% -40%, #fff0, hsl(200deg 100% 83% / 2.35%) 70%, #fff0 70%),
+		radial-gradient(ellipse at -40% -20%, #fff0, hsl(200deg 100% 76% / 0.78%) 60%, #fff0 60%),
+		radial-gradient(ellipse at 180% 180%, #fff0, hsl(200deg 100% 76% / 0.78%) 60%, #fff0 60%),
+		linear-gradient(to top left, hsl(210 100% 56.67% / 6.67%), transparent),
+		linear-gradient(to top right, hsl(220 73.33% 50% / 6.67%), transparent);
 	&::after {
 		content: '';
 		display: block;
