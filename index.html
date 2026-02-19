@@ -5,9 +5,9 @@
 	<script type="importmap">
 		{
 			"imports": {
-				"nyooom/render": "https://cdn.jsdelivr.net/npm/nyooom@0.1.0/render.js",
-				"nyooom/observable": "https://cdn.jsdelivr.net/npm/nyooom@0.1.0/observable.js",
-				"nyooom/domProxy": "https://cdn.jsdelivr.net/npm/nyooom@0.1.0/domProxy.js",
+				"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.0/render.js",
+				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.0/observable.js",
+				"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.0/domProxy.js",
 				"nyooom/showcase": "./js/nyooom-showcase.js"
 			}
 		}
@@ -63,14 +63,13 @@
 				<li><a href="#top">Top</a></li>
 				<li><a href="#rendering">Rendering</a></li>
 				<li><a href="#observable">Reactivity</a></li>
-				<li><a href="#dom-proxy">DOM-Proxies</a></li>
+				<li><a href="#controllers">Controllers</a></li>
 				<li><a href="https://git.but.gay/darkwiiplayer/nyooom">Repository</a></li>
 				<li><a href="https://github.com/darkwiiplayer/nyooom">Github</a></li>
-				<li><a href="https://www.npmjs.com/package/nyooom">npm</a></li>
 			</ul>
 		</nav>
-		<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/npm/nyooom/badge">
-		<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/github/darkwiiplayer/nyooom/badge">
+		<!-- <img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/npm/nyooom/badge"> -->
+		<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/gh/darkwiiplayer/nyooom/badge">
 	</header>
 
 	<page-hero role="banner" cover=60>
@@ -130,6 +129,25 @@
 			</div>
 		</section>
 
+		<section class="big" style="color: white; background: color-mix(in hsl, #000, 60% var(--secondary)); padding-block: 1em; margin: 0">
+			<div class="content-width">
+				<p>
+					<b>Note:</b> Due to several questionable decisions made by those in charge of <code>npmjs.com</code>,
+					it is no longer the recommended way of using nyooom ant the package hosted there will receive
+					no updates for the time being.
+				</p>
+				<details>
+					<summary>Alternative ways of using Nyooom</summary>
+					<ol>
+						<li> Linking to a specific tag on github via jsdelivr
+						<li> Using a git submodule to copy the code into projects
+						<li> Using the npm package hosted as a fallback at <a href="https://git.but.gay/darkwiiplayer/-/packages/npm/nyooom/">git.but.gay</a>
+						<li> Self-Hosting a mirror of the npm package
+					</ol>
+				</details>
+			</div>
+		</section>
+
 		<section id="getting-started" class="content-width">
 			<h2>Getting Started</h2>
 
@@ -138,7 +156,7 @@
 					Trying out nyooom is super easy:
 				</p>
 
-				<pre class="box"><code lang=js>import {html} from "https://cdn.jsdelivr.net/npm/nyooom/nyooom.js"</code></pre>
+				<pre class="box"><code lang=js>import {html} from "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/nyooom.js"</code></pre>
 				
 				<p>Or, if you want to use <a href="#importmaps-snippet">import maps</a>:</p>
 
@@ -176,9 +194,9 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 <pre class="box" id="importmaps-snippet"><code lang="html">&lt;script type="importmap"&gt;
 	{
 		"imports": {
-			"nyooom/render": "https://cdn.jsdelivr.net/npm/nyooom/render.js",
-			"nyooom/observable": "https://cdn.jsdelivr.net/npm/nyooom/observable.js",
-			"nyooom/domProxy": "https://cdn.jsdelivr.net/npm/nyooom/domProxy.js",
+			"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/render.js",
+			"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/observable.js",
+			"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/domProxy.js",
 		}
 	}
 &lt;/script&gt;</code></pre>

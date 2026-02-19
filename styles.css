@@ -1,6 +1,7 @@
 :root {
 	--corner-radius: 2px;
-	--color: hsl(190deg, 100%, 50%);
+	--color: hsl(190deg, 100%, 44%);
+	--secondary: hsl(200deg 60% 56%);
 }
 
 [contenteditable] { white-space: pre }
