@@ -14,5 +14,8 @@
 		"url": "https://git.but.gay/darkwiiplayer/nyooom"
 	},
 	"homepage": "https://darkwiiplayer.github.io/nyooom",
-	"keywords": ["front-end", "components", "framework", "reactivity"]
+	"keywords": ["front-end", "components", "framework", "reactivity"],
+	"publishConfig": {
+		"registry": "https://git.but.gay/api/packages/darkwiiplayer/npm/"
+	}
 }
