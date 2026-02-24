@@ -16,6 +16,10 @@ document.body.append(html.div(
 ))
 ```
 
+<a href="https://www.jsdelivr.com/package/gh/darkwiiplayer/nyooom?tab=files">
+	<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/gh/darkwiiplayer/nyooom/badge">
+</a>
+
 ## Goals
 
 > Arrakis teaches the attitude of the knife - chopping off what's incomplete and
