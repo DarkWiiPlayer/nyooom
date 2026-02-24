@@ -1,7 +1,14 @@
+/** @typedef {string|symbol} name */
+
 export const array = (methods, extra) => {
 	if (extra) return array(extra)(methods)
 
 	const traps = {
+		/**
+		 * @param {HTMLElement} target
+		 * @param {name} prop
+		 * @return {any}
+		 */
 		get(target, prop) {
 			if (prop === "length") {
 				return target.children.length
@@ -11,7 +18,7 @@ export const array = (methods, extra) => {
 						yield methods.get.call(child)
 					}
 				}
-			} else if (prop.match?.call(prop, /^[0-9]+$/)) {
+			} else if ((typeof prop === "string") && prop.match?.call(prop, /^[0-9]+$/)) {
 				const child = target.children[prop]
 				if (child && methods.get) return methods.get.call(child)
 				return child
@@ -19,8 +26,14 @@ export const array = (methods, extra) => {
 				return Array.prototype[prop]
 			}
 		},
+		/**
+		 * @param {HTMLElement} target
+		 * @param {name} prop
+		 * @param {any} value
+		 * @return {any}
+		 */
 		set(target, prop, value) {
-			if (prop.match?.call(prop, /^[0-9]+$/)) {
+			if ((typeof prop === "string") && prop.match?.call(prop, /^[0-9]+$/)) {
 				const child = target.children[prop]
 				if (child) {
 					methods.set.call(child, value)
@@ -35,7 +48,7 @@ export const array = (methods, extra) => {
 						methods.set.call(element, value)
 						return true
 					} else {
-						return false
+						return true
 					}
 				}
 			} else if (prop == "length") {
@@ -45,8 +58,12 @@ export const array = (methods, extra) => {
 					return false
 			}
 		},
+		/**
+		 * @param {HTMLElement} target
+		 * @param {name} prop
+		 */
 		deleteProperty(target, prop) {
-			if (prop.match?.call(prop, /^[0-9]+$/)) {
+			if ((typeof prop === "string") && prop.match?.call(prop, /^[0-9]+$/)) {
 				const child = target.children[prop]
 				if (child) child.remove()
 				return true
@@ -74,7 +91,7 @@ export const meta = (element = document.head) => new Proxy(element, {
 		}
 		meta.content = value
 		return true
-	}
+	},
 	deleteProperty(target, prop) {
 		for (const meta of target.querySelectorAll(`meta[name="${name}"]`)) {
 			meta.remove()
