@@ -5,9 +5,9 @@
 	<script type="importmap">
 		{
 			"imports": {
-				"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.0/render.js",
-				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.0/observable.js",
-				"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.0/domProxy.js",
+				"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.1/render.js",
+				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.1/observable.js",
+				"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.1/domProxy.js",
 				"nyooom/showcase": "./js/nyooom-showcase.js"
 			}
 		}
@@ -69,7 +69,9 @@
 			</ul>
 		</nav>
 		<!-- <img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/npm/nyooom/badge"> -->
-		<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/gh/darkwiiplayer/nyooom/badge">
+		<a href="https://www.jsdelivr.com/package/gh/darkwiiplayer/nyooom?tab=files">
+			<img alt="" class="jsdelivr-badge" src="https://data.jsdelivr.com/v1/package/gh/darkwiiplayer/nyooom/badge">
+		</a>
 	</header>
 
 	<page-hero role="banner" cover=60>
@@ -378,7 +380,7 @@ return html.buttonGroup(
 	html.button(
 		"Click Me!",
 		html.span(
-			counter.compute(val =&gt; val ? ` ${val}` : "")
+			counter.map(val =&gt; val ? ` ${val}` : "")
 		),
 		{
 			click() {
@@ -423,7 +425,7 @@ return html.buttonGroup(
 			<nyooom-showcase code="false">
 				<code>
 <div contenteditable="false">
-const TaskList = domArray({
+const TaskList = dom.array({
 	new(text) {
 		return html.li(text, html.button({
 			class: "close",

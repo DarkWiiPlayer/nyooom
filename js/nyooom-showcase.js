@@ -1,6 +1,6 @@
 import {html, nothing} from "nyooom/render"
 import {Observable, State} from "nyooom/observable"
-import {domArray} from "nyooom/domProxy"
+import * as dom from "nyooom/domProxy"
 import element from "https://darkwiiplayer.github.io/easier-elements-js/easier-elements.js"
 import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js';
 import lang_html from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/xml.min.js"
@@ -93,7 +93,7 @@ element(class NyooomShowcase extends HTMLElement {
 
 	render() {
 		const code = this.querySelector("code").innerText
-		const imports = { html, nothing, Observable, State, domArray }
+		const imports = { html, nothing, Observable, State, dom }
 		const [names, values] = [0,1].map(index => Object.entries(imports).map(pair => pair[index]))
 		try {
 			const fn = new Function(...names, code)
