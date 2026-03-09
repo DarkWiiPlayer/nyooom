@@ -332,7 +332,7 @@ export class DomRenderer extends Renderer {
 	 * @return {object is State}
 	 */
 	static isState(object) {
-		return object && object[Symbol.for("nyooom:state")]
+		return object && object[state]
 	}
 
 	/** Wraps a list of elements in a document fragment
@@ -449,6 +449,11 @@ export class DomHtmlRenderer extends DomRenderer {
 		}
 	}
 }
+
+/** Symbol used to identify an object as a nyoom-compatible state
+ * @type {symbol}
+ */
+export const state = Symbol.for("nyooom:state")
 
 /** Renderer for normal SVG nodes targetting a browser's DOM */
 export class DomSvgRenderer extends DomRenderer {

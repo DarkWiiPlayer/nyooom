@@ -317,9 +317,12 @@ export class State extends EventTarget {
 
 	readOnly = true
 
-	static {
-		this.prototype[Symbol.for("nyooom:state")] = true
-	}
+	/** Symbol used to identify an object as a nyoom-compatible state
+	 * @type {symbol}
+	 */
+	static symbol = Symbol.for("nyooom:state")
+
+	static { this.prototype[this.symbol] = true }
 
 	/**
 	 * @template G

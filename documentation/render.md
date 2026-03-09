@@ -124,11 +124,16 @@ console.log(div.getAttribute("data-foo") === "bar")
 
 Nyooom supports reactivity through a simple protocol:
 
-State objects identify themselves with the `Symbol.for("nyooom:state")`
-attribute, which must return a truthy value.
+The render module exports the `state` value which is a Symbol used to identify
+state objects to the renderer. Any object for which `object[symbol]` is a truthy
+value is assumed to be a state.
+
+This symbol is set to `Symbol.for("nyooom:state")` so nyooom-compatible states
+can be defined without having to import nyooom as a dependency. Whenever nyooom
+is already being imported, using the export is recommended over `Symbol.for`.
 
 States are expected to expose a `value` attribute that is both readable and writeable,
-and to emit a "change" event whenever its vale has changed.
+and to emit a "change" event whenever its vale has changed or shortly thereafter.
 
 States can be passed to nyooom's node functions as both
 attribute values (values in an object) or
