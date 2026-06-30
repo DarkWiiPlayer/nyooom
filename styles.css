@@ -1,7 +1,8 @@
 :root {
+	--hue: 180deg;
 	--corner-radius: 2px;
-	--color: hsl(190deg, 100%, 44%);
-	--secondary: hsl(200deg 60% 56%);
+	--color: hsl(var(--hue), 80%, 56%);
+	--secondary: hsl(calc(var(--hue) + 10deg) 70% 50%);
 }
 
 [contenteditable] { white-space: pre }
@@ -26,11 +27,11 @@ p.important {
 
 page-hero {
 	background-image:
-		radial-gradient(ellipse at 100% -40%, #fff0, hsl(200deg 100% 83% / 2.35%) 70%, #fff0 70%),
-		radial-gradient(ellipse at -40% -20%, #fff0, hsl(200deg 100% 76% / 0.78%) 60%, #fff0 60%),
-		radial-gradient(ellipse at 180% 180%, #fff0, hsl(200deg 100% 76% / 0.78%) 60%, #fff0 60%),
-		linear-gradient(to top left, hsl(210 100% 56.67% / 6.67%), transparent),
-		linear-gradient(to top right, hsl(220 73.33% 50% / 6.67%), transparent);
+		radial-gradient(ellipse at 100% -40%, #fff0, hsl(from var(--color) h 100% 83% / 2.35%) 70%, #fff0 70%),
+		radial-gradient(ellipse at -40% -20%, #fff0, hsl(from var(--color) h 100% 76% / 0.78%) 60%, #fff0 60%),
+		radial-gradient(ellipse at 180% 180%, #fff0, hsl(from var(--color) h 100% 76% / 0.78%) 60%, #fff0 60%),
+		linear-gradient(to top left, hsl(from var(--color) h 100% 66.67% / 6.67%), transparent),
+		linear-gradient(to top right, hsl(from var(--color) h 73.33% 50% / 6.67%), transparent);
 	&::after {
 		content: '';
 		display: block;
@@ -42,6 +43,11 @@ page-hero {
 		background-image: linear-gradient(to right in hsl, #0060, #def6, #0060);
 		filter: saturate(.4);
 	}
+}
+
+.jsdelivr-badge {
+	filter: saturate(.8) hue-rotate(calc(345deg + var(--hue)));
+	border-radius: .2em;
 }
 
 skooma-showcase {
