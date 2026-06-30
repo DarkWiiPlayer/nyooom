@@ -17,7 +17,7 @@
 
 	<style>
 		@import
-		url('https://cdn.jsdelivr.net/gh/darkwiiplayer/css@a3c3a0f/all.css') layer(framework);
+		url('https://cdn.jsdelivr.net/gh/darkwiiplayer/css@5f203ca/all.css') layer(framework);
 		@import url('styles.css') layer(site);
 
 		.jsdelivr-badge {
@@ -74,10 +74,10 @@
 		</a>
 	</header>
 
-	<page-hero role="banner" cover=60>
+	<page-hero role="banner" cover=40>
 		<!-- <img src="https://picsum.photos/1920/1080"> -->
 		<hgroup>
-			<h1 style="font-size: 6vw">Nyooom</span></h1>
+			<h1 style="font-size: 6vw"><i>Nyooom</i></span></h1>
 			<code lang="js">import { html } from "nyooom/render"</code>
 			<p>
 				A new way of building
@@ -88,7 +88,7 @@
 					<template>components</template>
 					<template>applications</template>
 				</type-writer>
-				in vanilla JavaScript
+				in plain JavaScript
 			</p>
 		</hgroup>
 		<flex-row gap=1>
@@ -98,7 +98,7 @@
 	</page-hero>
 
 	<main style="margin-top: 0">
-		<section id="elevator-pitch" class="box">
+		<section style="min-height: 60vh" id="elevator-pitch" class="box">
 			<div class="content-width" style="padding: 2em 0">
 				<h2>Elevator Pitch</h2>
 
@@ -205,7 +205,9 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 			</section>
 
 			<p>Alternatively, you can use this JSFiddle as a playground</p>
-			<script async src="//jsfiddle.net/darkwiiplayer/cg5orayp/73/embed/js,result/dark/"></script>
+			<div style="border: 2px solid color-mix(in hsl, var(--color), 40% transparent); border-radius: 2px; padding: .2em 1em;">
+				<script async src="//jsfiddle.net/darkwiiplayer/cg5orayp/embed/js,result/dark/"></script>
+			</div>
 		</section>
 
 		<section id="rendering" class="content-width">
@@ -553,6 +555,7 @@ return html.flexColumn(
 		</section>
 	</main>
 
+	<vertical-spacer double></vertical-spacer>
 	<footer class="inset box">
 		<flex-row gap=3>
 			<table>

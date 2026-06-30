@@ -36,12 +36,11 @@ page-hero {
 		display: block;
 		position: absolute;
 		bottom: 0;
-		height: .2rem;
+		height: .1rem;
 		left: 0;
 		right: 0;
-		background-image: linear-gradient(to right, #0660, #0f6, #0660);
-		background-image: linear-gradient(to right in hsl, #6060, #f0f, #6060);
-		filter: saturate(.4) opacity(.2);
+		background-image: linear-gradient(to right in hsl, #0060, #def6, #0060);
+		filter: saturate(.4);
 	}
 }
 
