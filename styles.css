@@ -1,8 +1,21 @@
+@property --hue {
+	syntax: "<angle>";
+	inherits: true;
+	initial-value: 0deg;
+}
+
+@keyframes huerotate {
+	from { --hue: 0deg; }
+	to { --hue: 360deg; }
+}
+
 :root {
 	--hue: 220deg;
 	--corner-radius: 2px;
-	--color: hsl(var(--hue), 80%, 56%);
-	--secondary: hsl(calc(var(--hue) + 10deg) 70% 50%);
+	--color: oklch(50% 80% var(--hue));
+	--secondary: oklch( 70% 50% calc(var(--hue) + 10deg));
+
+	animation: huerotate 9s linear infinite;
 }
 
 [contenteditable] { white-space: pre }
@@ -27,11 +40,11 @@ p.important {
 
 page-hero {
 	background-image:
-		radial-gradient(ellipse at 100% -40%, #fff0, hsl(from var(--color) h 100% 83% / 2.35%) 70%, #fff0 70%),
-		radial-gradient(ellipse at -40% -20%, #fff0, hsl(from var(--color) h 100% 76% / 0.78%) 60%, #fff0 60%),
-		radial-gradient(ellipse at 180% 180%, #fff0, hsl(from var(--color) h 100% 76% / 0.78%) 60%, #fff0 60%),
-		linear-gradient(to top left, hsl(from var(--color) h 100% 66.67% / 6.67%), transparent),
-		linear-gradient(to top right, hsl(from var(--color) h 73.33% 50% / 6.67%), transparent);
+		radial-gradient(ellipse at 100% -40%, #fff0, oklch(from var(--color) 100% 83% h / 2.35%) 70%, #fff0 70%),
+		radial-gradient(ellipse at -40% -20%, #fff0, oklch(from var(--color) 100% 76% h / 0.78%) 60%, #fff0 60%),
+		radial-gradient(ellipse at 180% 180%, #fff0, oklch(from var(--color) 100% 76% h / 0.78%) 60%, #fff0 60%),
+		linear-gradient(to top left, oklch(from var(--color) 100% 66.67% h / 6.67%), transparent),
+		linear-gradient(to top right, oklch(from var(--color) 73.33% 50% h / 6.67%), transparent);
 	&::after {
 		content: '';
 		display: block;
@@ -40,7 +53,7 @@ page-hero {
 		height: .1rem;
 		left: 0;
 		right: 0;
-		background-image: linear-gradient(to right in hsl, #0060, #def6, #0060);
+		background-image: linear-gradient(to right in oklch, #0060, #def6, #0060);
 		filter: saturate(.4);
 	}
 }
