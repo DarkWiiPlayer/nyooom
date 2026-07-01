@@ -1,21 +1,8 @@
-@property --hue {
-	syntax: "<angle>";
-	inherits: true;
-	initial-value: 0deg;
-}
-
-@keyframes huerotate {
-	from { --hue: 0deg; }
-	to { --hue: 360deg; }
-}
-
 :root {
 	--hue: 220deg;
 	--corner-radius: 2px;
-	--color: oklch(50% 80% var(--hue));
-	--secondary: oklch( 70% 50% calc(var(--hue) + 10deg));
-
-	animation: huerotate 9s linear infinite;
+	--color: oklch(50% 60% var(--hue));
+	--secondary: oklch(50% 40% calc(var(--hue) + 10deg));
 }
 
 [contenteditable] { white-space: pre }
@@ -40,11 +27,19 @@ p.important {
 
 page-hero {
 	background-image:
-		radial-gradient(ellipse at 100% -40%, #fff0, oklch(from var(--color) 100% 83% h / 2.35%) 70%, #fff0 70%),
-		radial-gradient(ellipse at -40% -20%, #fff0, oklch(from var(--color) 100% 76% h / 0.78%) 60%, #fff0 60%),
-		radial-gradient(ellipse at 180% 180%, #fff0, oklch(from var(--color) 100% 76% h / 0.78%) 60%, #fff0 60%),
-		linear-gradient(to top left, oklch(from var(--color) 100% 66.67% h / 6.67%), transparent),
-		linear-gradient(to top right, oklch(from var(--color) 73.33% 50% h / 6.67%), transparent);
+		radial-gradient(ellipse at 100% -40%, transparent, oklch(from var(--color) 60% 83% h / 4.35%) 70%, transparent 70%),
+		radial-gradient(ellipse at -40% -20%, transparent, oklch(from var(--color) 60% 86% h / 2.28%) 60%, transparent 60%),
+		radial-gradient(ellipse at 180% 180%, transparent, oklch(from var(--color) 60% 86% h / 2.28%) 60%, transparent 60%),
+		linear-gradient(to top left, oklch(from var(--color) 50% 66.77% h / 6.67%), transparent),
+		linear-gradient(to top right, oklch(from var(--color) 63.33% 80% h / 6.67%), transparent);
+	@container style(--color-scheme: light) {
+		background-image:
+			radial-gradient(ellipse at 100% -40%, transparent, oklch(from var(--color) 60% 53% h / 8.35%) 70%, transparent 70%),
+			radial-gradient(ellipse at -40% -20%, transparent, oklch(from var(--color) 60% 56% h / 4.28%) 60%, transparent 60%),
+			radial-gradient(ellipse at 180% 180%, transparent, oklch(from var(--color) 60% 56% h / 4.28%) 60%, transparent 60%),
+			linear-gradient(to top left, oklch(from var(--color) 50% 66.77% h / 9.67%), transparent),
+			linear-gradient(to top right, oklch(from var(--color) 63.33% 80% h / 10.67%), transparent);
+	}
 	&::after {
 		content: '';
 		display: block;
@@ -55,6 +50,9 @@ page-hero {
 		right: 0;
 		background-image: linear-gradient(to right in oklch, #0060, #def6, #0060);
 		filter: saturate(.4);
+		@container style(--color-scheme: light) {
+			background-image: linear-gradient(to right in oklch, #0060, oklch(from var(--color) 60% 80% h / 60%), #0060);
+		}
 	}
 }
 
