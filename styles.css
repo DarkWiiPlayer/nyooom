@@ -1,5 +1,5 @@
 :root {
-	--hue: 180deg;
+	--hue: 220deg;
 	--corner-radius: 2px;
 	--color: hsl(var(--hue), 80%, 56%);
 	--secondary: hsl(calc(var(--hue) + 10deg) 70% 50%);
