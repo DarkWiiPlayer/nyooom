@@ -48,6 +48,10 @@ page-hero {
 .jsdelivr-badge {
 	filter: saturate(.8) hue-rotate(calc(345deg + var(--hue)));
 	border-radius: .2em;
+	width: clamp(9em, 12vw, 11em);
+	@media (width < 28em) {
+		display: none;
+	}
 }
 
 skooma-showcase {
