@@ -51,10 +51,6 @@ html-preview {
 	opacity: .6;
 }
 `
-const theme = html.link({
-	rel: "stylesheet",
-	href: "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css"
-})
 
 element(class NyooomShowcase extends HTMLElement {
 	constructor() {
@@ -82,7 +78,6 @@ element(class NyooomShowcase extends HTMLElement {
 			html.slot(),
 			html.style(css),
 			...Array.from(document.styleSheets).map(sheet => sheet.ownerNode.cloneNode(true)),
-			theme.cloneNode(true),
 			this.error = html.div({class: ["error"]}),
 			this.output = html.code(),
 			this.preview = html.htmlPreview({input: capture}),

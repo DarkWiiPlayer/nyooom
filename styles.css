@@ -89,3 +89,23 @@ main {
 		line-height: 1.6em;
 	}
 }
+
+code {
+	.hljs-keyword { color: oklch(80% 90% 280deg); }
+	.hljs-title.function_ { color: oklch(70% 60% 220deg); }
+	.hljs-title.class_ { color: oklch(70% 60% 200deg); }
+	.hljs-string { color: oklch(80% 60% 270deg); }
+	.hljs-attr { color: oklch(90% 70% 320deg); }
+	.hljs-property { color: oklch(90% 70% 350deg); }
+	.hljs-name { color: oklch(70% 60% 220deg); }
+
+	@container style(--color-scheme: light) {
+		.hljs-keyword { color: oklch(50% 90% 280deg); }
+		.hljs-title.function_ { color: oklch(50% 60% 220deg); }
+		.hljs-title.class_ { color: oklch(50% 60% 200deg); }
+		.hljs-string { color: oklch(50% 80% 270deg); }
+		.hljs-attr { color: oklch(40% 80% 320deg); }
+		.hljs-property { color: oklch(40% 80% 350deg); }
+		.hljs-name { color: oklch(50% 60% 220deg); }
+	}
+}
