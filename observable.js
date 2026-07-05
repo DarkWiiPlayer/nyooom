@@ -74,6 +74,22 @@ export class Observable extends EventTarget {
 	/** @type {Boolean} */
 	#trackChildren = false
 
+	/** Proxy to allow reading and writing properties.
+	 * @type {Proxy<Object>}
+	 */
+	values
+
+	/** Raw internal values object.
+	 * Should only be used in very rare cases as this does NOT trigger events when written to.
+	 * @type {Object}
+	 */
+	target
+
+	/** Read-Only proxy for the internal values object.
+	 * @type {Proxy<Object>}
+	 */
+	readOnly
+
 	/**
 	 * @param {Object} target
 	 * @param {Options} options
@@ -87,37 +103,44 @@ export class Observable extends EventTarget {
 
 		abortRegistry.register(this, this.#abortController)
 
-		Object.defineProperty(this, "target", target)
+		Object.defineProperty(this, "target", {value: target})
 
-		this.values = new Proxy(target, {
-			/**
-			 * @param {Object} _
-			 * @param {string|symbol} property
-			 * @param {any} value
-			 * @param {Proxy} receiver
-			 */
-			set: (_, property, value, receiver) => {
-				return this.set(property, value, receiver)
-			}
+		Object.defineProperty(this, "values", {
+			value: new Proxy(target, {
+				/**
+				 * @param {Object} _
+				 * @param {string|symbol} property
+				 * @param {any} value
+				 * @param {Proxy} receiver
+				 */
+				set: (_, property, value, receiver) => {
+					return this.set(property, value, receiver)
+				}
+			})
 		})
 
-		this.readOnly = new Proxy(target, {
-			set(_, prop) {
-				throw new TypeError(`Attempting to set property ${String(prop)} on read-only values proxy`)
-			}
+		Object.defineProperty(this, "readOnly", {
+			value: new Proxy(target, {
+				set(_, prop) {
+					throw new TypeError(`Attempting to set property ${String(prop)} on read-only values proxy`)
+				}
+			})
 		})
 	}
 
-	/**
+	/** Compares two values. Override for custom comparison logic.
+	 * Setting this to return false allows triggering change events
+	 * even when setting properties to their current value.
+	 * Default: shallow object equality
 	 * @param {any} a
 	 * @param {any} b
 	 */
 	same(a, b) { return a === b }
 
-	/**
+	/** Updates a property to a new value.
 	 * @param {string|symbol} property
 	 * @param {any} value
-	 * @param {any} source
+	 * @param {any} source Source of the property change. Passed through the event chain to avoid loops.
 	 */
 	set(property, value, source) {
 		const target = this.#target
@@ -166,6 +189,9 @@ export class Observable extends EventTarget {
 	 */
 	emit(changes) {
 		const consolidated = this.consolidate(changes)
+
+		if (!consolidated.length) return
+
 		this.dispatchEvent(new ChangedEvent(...consolidated))
 
 		if (this.#states.size || this.#promises.size) {
@@ -199,7 +225,9 @@ export class Observable extends EventTarget {
 	/** Override this method in subclasses to filter changes
 	 * before dispatching an event, for example by dropping
 	 * insignificant changes or even adding new ones.
-	 * This method is allowed to mutate the input array.
+	 * This method is allowed to re-use and mutate
+	 * its input array.
+	 * Returning an empty array cancels the change event.
 	 * @param {Change[]} changes
 	 * @return {Change[]}
 	 */
@@ -207,7 +235,10 @@ export class Observable extends EventTarget {
 		return changes
 	}
 
-	/** Synchronously emits an event with all queued changes. Does nothing when there are no events. */
+	/** Synchronously emits an event with all queued changes.
+	 * Clears the queue in the process.
+	 * Does nothing when there are no pending events.
+	 */
 	emitQueue() {
 		const queue = this.#queue
 		if (queue.length) {
@@ -216,12 +247,17 @@ export class Observable extends EventTarget {
 		queue.length = 0
 	}
 
+	/** Signal that triggers when this object is garbage-collected */
 	get collectedSignal() { return this.#abortController.signal }
 
-	/** @type {Number} */
-	get changesQueued() { return this.#queue.length }
+	/** Returns the number of queued changes.
+	 * @type {Number}
+	 */
+	get queueLength() { return this.#queue.length }
 
-	/** @type Map<Observable, Map<string|symbol, EventListener>> */
+	/** Internal map of adopted observables
+	 * @type Map<Observable, Map<string|symbol, EventListener>>
+	 */
 	#nested = new Map()
 
 	/** Adopts an observable to be notified of its changes
@@ -282,7 +318,9 @@ export class Observable extends EventTarget {
 	/** @type {Map<string|symbol,WriteableState>} */
 	#states = new Map()
 
-	/** @param {string|symbol} property */
+	/**
+	 * @param {string|symbol} property
+	 */
 	property(property, {readonly=false}={}) {
 		const cached = this.#states.get(property)
 		if (cached) return cached
@@ -291,6 +329,13 @@ export class Observable extends EventTarget {
 		this.#states.set(property, state)
 
 		return state
+	}
+
+	/** Alias for `property()`
+	 * @type {typeof Observable.prototype.property}
+	 */
+	state(...args) {
+		return this.property(...args)
 	}
 }
 
@@ -567,17 +612,19 @@ class ComputedState extends State {
 const componentInstanceStates = new WeakMap()
 
 const attributeObserver = new MutationObserver(mutations => {
-	for (const {type, target, attributeName: name} of mutations) {
+	for (const {type, target, attributeName: attribute} of mutations) {
 		if (type == "attributes" && target instanceof HTMLElement) {
-			const next = target.getAttribute(name)
-			const camelName = kebabToCamel(name)
+			const next = target.getAttribute(attribute)
+			const camelName = kebabToCamel(attribute)
 			const state = componentInstanceStates.get(target)
 			if (String(state.values[camelName]) !== next)
-				state.values[camelName] = next
+				state.set(camelName, next, attributeObserver)
 		}
 	}
 })
 
+/**
+ */
 export class ReactiveElement extends HTMLElement {
 	constructor() {
 		super()
@@ -595,11 +642,12 @@ export class ReactiveElement extends HTMLElement {
 
 		observable.addEventListener("changed", event => {
 			if (event instanceof ChangedEvent)
-				for (const {property, to: value} of event.changes) {
-					if (typeof property == "string") {
+				for (const {property, to: value, source} of event.changes) {
+					if (typeof property == "string" && source !== attributeObserver) {
 						const kebabName = camelToKebab(property)
-						if (element.getAttribute(kebabName) !== String(value))
-							element.setAttribute(kebabName, value)
+						const string = String(value)
+						if (element.getAttribute(kebabName) !== string)
+							element.setAttribute(kebabName, string)
 					}
 				}
 		})
