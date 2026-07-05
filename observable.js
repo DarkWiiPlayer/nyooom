@@ -321,11 +321,11 @@ export class Observable extends EventTarget {
 	/**
 	 * @param {string|symbol} property
 	 */
-	property(property, {readonly=false}={}) {
+	property(property, {readOnly=false}={}) {
 		const cached = this.#states.get(property)
 		if (cached) return cached
 
-		const state = new PropertyState(this, property, {readonly})
+		const state = new PropertyState(this, property, {readOnly})
 		this.#states.set(property, state)
 
 		return state
@@ -465,21 +465,16 @@ export class PropertyState extends State {
 	/** @type {string|symbol} */
 	#property
 
-	/** @type {boolean} */
-	#readonly = false
-
 	/**
 	 * @param {Observable} observable
 	 * @param {string|symbol} property
 	 */
-	constructor(observable, property, {readonly=false}={}) {
+	constructor(observable, property, {readOnly=false}={}) {
 		super()
-		this.#readonly = readonly
+		Object.defineProperty(this, "readOnly", {value: readOnly})
 		this.#observable = observable
 		this.#property = property
 	}
-
-	get readonly() { return this.#readonly }
 
 	/** @param {T} value */
 	set value(value) {
@@ -497,7 +492,7 @@ export class PropertyState extends State {
 	 * @param {T} value
 	 */
 	update(value) {
-		if (this.#readonly) {
+		if (this.readOnly) {
 			throw(new TypeError("Attempting to update a read-only state"))
 		}
 		this.#observable.set(this.#property, value, this)
