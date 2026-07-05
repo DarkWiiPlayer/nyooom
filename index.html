@@ -40,7 +40,7 @@
 		let hue = url.searchParams.get("hue")
 		if (hue.match(/^[0-9]+$/)) hue = hue + "deg"
 
-		if (hue.match(/^[0-9]+deg$/)) document.firstChild.style.setProperty("--hue", hue)
+		document.firstChild.style.setProperty("--hue", hue)
 	</script>
 
 	<script type="module">
