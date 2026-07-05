@@ -153,11 +153,11 @@
 					Trying out nyooom is super easy:
 				</p>
 
-				<pre class="box"><code lang=js>import {html} from "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/nyooom.js"</code></pre>
+				<pre class="box"><code lang=js>import {html} from "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/render.js"</code></pre>
 				
 				<p>Or, if you want to use <a href="#importmaps-snippet">import maps</a>:</p>
 
-				<pre class="box"><code lang=js>import {html} from "nyooom/nyooom"</code></pre>
+				<pre class="box"><code lang=js>import {html} from "nyooom/render"</code></pre>
 			</section>
 
 			<section>
@@ -191,9 +191,11 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 <pre class="box" id="importmaps-snippet"><code lang="html">&lt;script type="importmap"&gt;
 	{
 		"imports": {
-			"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/render.js",
-			"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/observable.js",
+			"nyooom/controller-registry": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/controller-registry.js",
+			"nyooom/controllers": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/controllers.js",
 			"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/domProxy.js",
+			"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/observable.js",
+			"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom/render.js"
 		}
 	}
 &lt;/script&gt;</code></pre>
