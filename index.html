@@ -36,6 +36,14 @@
 	</script>
 
 	<script type="module">
+		const url = new URL(document.location)
+		let hue = url.searchParams.get("hue")
+		if (hue.match(/^[0-9]+$/)) hue = hue + "deg"
+
+		if (hue.match(/^[0-9]+deg$/)) document.firstChild.style.setProperty("--hue", hue)
+	</script>
+
+	<script type="module">
 		import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js';
 		import lang_html from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/xml.min.js"
 
