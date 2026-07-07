@@ -1,6 +1,9 @@
-/** @typedef {Promise & {signal: AbortSignal}} PromiseWithSignal */
-/** @typedef {(element: HTMLElement, detached: PromiseWithSignal) => void} Callback */
-/** @typedef {new (element: HTMLElement, detached: PromiseWithSignal) => Object} ControllerClass */
+/** @template T
+ * @typedef {Promise<T> & {signal: AbortSignal}} PromiseWithSignal
+ */
+
+/** @typedef {(element: HTMLElement, detached: PromiseWithSignal<void>) => void} Callback */
+/** @typedef {new (element: HTMLElement, detached: PromiseWithSignal<void>) => Object} ControllerClass */
 /** @typedef {Callback|ControllerClass} Controller */
 
 // Keep a referee alive until a referrer is collected
