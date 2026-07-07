@@ -5,9 +5,10 @@
 	<script type="importmap">
 		{
 			"imports": {
-				"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.1/render.js",
-				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.1/observable.js",
-				"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.3.1/domProxy.js",
+				"nyooom/render": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.4.0/render.js",
+				"nyooom/controller-registry": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.4.0/controller-registry.js",
+				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.4.0/observable.js",
+				"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.4.0/domProxy.js",
 				"nyooom/showcase": "./js/nyooom-showcase.js"
 			}
 		}
@@ -38,9 +39,11 @@
 	<script type="module">
 		const url = new URL(document.location)
 		let hue = url.searchParams.get("hue")
-		if (hue.match(/^[0-9]+$/)) hue = hue + "deg"
+		if (hue) {
+			if (hue.match(/^[0-9]+$/)) hue = hue + "deg"
 
-		document.firstChild.style.setProperty("--hue", hue)
+			document.firstChild.style.setProperty("--hue", hue)
+		}
 	</script>
 
 	<script type="module">
@@ -418,6 +421,30 @@ return html.buttonGroup(
 				Nyooom controllers are objects or functions that manage individual traits on HTML elements.
 				They can be added and removed as necessary and are controlled via the <code>controller</code> attribute.
 			</p>
+
+			<nyooom-showcase code="false">
+				<code>
+<div contenteditable="false">controllers.define("blink",
+	async (element, disconnected) =&gt; {
+		const s = element.style
+
+		const handle = window.setInterval(() =&gt; {
+			s.visibility = s.visibility ? "" : "hidden"
+		}, Number(element.dataset.blinkInterval) || 1000)
+		
+		await disconnected
+
+		window.clearInterval(handle)
+		element.removeAttribute("style")
+	}
+)
+
+return html.span("Hello, World!", {
+	controller: ["blink"],
+	dataset: { blinkInterval: 400 }
+})</div>
+				</code>
+			</nyooom-showcase>
 		</section>
 
 		<section class="content-width">

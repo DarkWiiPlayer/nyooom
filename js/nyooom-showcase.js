@@ -1,6 +1,8 @@
 import {html, nothing} from "nyooom/render"
 import {Observable, State} from "nyooom/observable"
 import * as dom from "nyooom/domProxy"
+import {ControllerRegistry} from "nyooom/controller-registry"
+
 import element from "https://darkwiiplayer.github.io/easier-elements-js/easier-elements.js"
 import hljs from 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/highlight.min.js';
 import lang_html from "https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/es/languages/xml.min.js"
@@ -26,7 +28,9 @@ const css = `
 }
 .error {
 	font-family: "Courier New", sans-serif;
-	grid-column: span 2;
+	grid-row: 2;
+	grid-column: 1 / -1;
+	color: red;
 }
 .error:empty { display: none; }
 .error:not(:empty)~* { display: none; }
@@ -88,19 +92,33 @@ element(class NyooomShowcase extends HTMLElement {
 
 	render() {
 		const code = this.querySelector("code").innerText
-		const imports = { html, nothing, Observable, State, dom }
+		const controllers = new ControllerRegistry(this.preview)
+		const imports = { html, nothing, Observable, State, dom, controllers }
 		const [names, values] = [0,1].map(index => Object.entries(imports).map(pair => pair[index]))
 		try {
 			const fn = new Function(...names, code)
 			const result = fn(...values)
 			this.error.replaceChildren()
-			this.output.innerHTML = hljs.highlight("html", result.outerHTML).value
+
+			if (result?.outerHTML)
+				this.output.innerHTML = hljs.highlight("html", result.outerHTML).value
+			else
+				this.output.innerHTML = ""
+
 			this.preview.classList.toggle("hidden", this.getAttribute("preview") === "false")
 			this.output.classList.toggle("hidden", this.getAttribute("code") === "false")
-			this.preview.replaceChildren(result)
+
+			if (result)
+				this.preview.replaceChildren(result)
 		} catch (error) {
-			console.error(error.stack)
-			this.error.innerText = error.stack
+			console.error(error.message)
+			this.error.replaceChildren(
+				html.p(
+					html.b(error.message),
+					html.br(),
+					error.stack
+				)
+			)
 		}
 	}
 })
