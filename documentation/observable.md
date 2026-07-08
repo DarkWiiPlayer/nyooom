@@ -63,11 +63,7 @@ same state object for any given property name.
 ### Filtering / Consolidating changes
 
 The list of events can be filtered before dispatching the event by overriding
-the `filterChanges(changes)` method on a subclass of `Observable`.
-
-For convenience, `Observable` provides the static method `consolidate` which can
-be set as the `filterChanges` method on any subclass or instance to join all
-changes on the same property into one.
+the `consolidate(changes)` method on a subclass of `Observable`.
 
 ### Skipping non-changes
 
