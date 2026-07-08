@@ -173,8 +173,8 @@
 
 			<section>
 				<p>
-					Calling any method on the <code>html</code> export will generate an HTML node.<br>
-					Passing in arguments is how you add children, set attributes and even do more advanced things.
+					Calling any <b>method</b> on the <code>html</code> export will generate an <b>HTML node.</b><br>
+					Passing in <b>arguments</b> is how you add <b>children</b>, set <b>attributes</b> and <b>even more</b> advanced things.
 				</p>
 
 				<nyooom-showcase preview="false">
@@ -184,7 +184,7 @@
 				</nyooom-showcase>
 
 				<p>
-					Using the <code>component</code> helper from the <code>nyooom/observable</code> module
+					Using the <b><code>component</code> helper</b> from the <code>nyooom/observable</code> module
 					makes it easier to see results on your page:
 					Just pass it a function that returns some DOM nodes, and it'll register a custom element for you.
 				</p>
@@ -226,7 +226,7 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 			<section>
 				<p>
 					Content can be added to a node by simply passing it as arguments to the function.
-					This works for strings, HTML elements, functions and even observable state containers.
+					This works for strings, HTML elements, functions and even state containers.
 				</p>
 
 				<nyooom-showcase preview="false">
@@ -260,7 +260,7 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 
 			<section>
 				<p>
-					Event listeners work just like attribute, except the value is a function:
+					Event listeners work just like attributes, except the value is a function:
 				</p>
 
 				<nyooom-showcase code="false">
@@ -302,7 +302,7 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 					</nyooom-showcase>
 
 					<p>
-						<code>dataset</code> converts its key-value pairs into <code>data-</code> attributes.
+						<code>dataset</code> converts its key-value pairs into <code>data-</code> attributes. Keys get converted into snake-case.
 					</p>
 
 					<nyooom-showcase preview=false>
@@ -311,7 +311,6 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 	{ dataset: {
 		from: "Fire",
 		to: "Heat",
-		snakeCase: "converted"
 	} },
 	"Heat from Fire"
 )</div>
@@ -343,13 +342,13 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 
 			<p>Nyooom is entirely implemented as a light-weight JavaScript library.</p>
 
-			<p>
-				This means that there is no new syntax for things you already know how to do.
-				Functions like <code>filter</code> or <code>map</code> can be applied directly to your data,
-				nodes can be assigned to variables right as you create them,
-				common structures can be extracted into function and even passed around as arguments,
-				and the syntax is just the boring old javascript that most tools already understand.
-			</p>
+			<ul>
+				<li> No new syntax for things you already know how to do
+				<li> Use functions like <code>filter</code> or <code>map</code> for low control
+				<li> Nodes can be assigned to variables right as you create them
+				<li> Extract common code into functions for refactoring
+				<li> Just the boring old JS syntax that you and your tools already know
+			</ul>
 
 			<nyooom-showcase code="false">
 				<code>
@@ -372,7 +371,7 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 			<pre class="box"><code lang=js>import {Observable, State} from 'nyooom/observable'</code></pre>
 
 			<p>
-				Nyooom offers two types of state containers: States and Observables.
+				Nyooom offers two types of state containers: <b>States</b> and <b>Observables</b>.
 				Their purpose is to store one or more values and emit events when they are changed.
 			</p>
 
