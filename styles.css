@@ -1,3 +1,15 @@
+@import url('https://fonts.cdnfonts.com/css/neck-l-sans');
+@import url('https://fonts.cdnfonts.com/css/nunito-2');
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: "Nunito", sans-serif;
+	font-weight: bold;
+}
+:root {
+	font-family: "Plus Jakarta Sans", sans-serif;
+	font-size: 1.2em;
+}
+
 :root {
 	--hue: 220deg;
 	--corner-radius: 2px;
@@ -8,8 +20,8 @@
 [contenteditable] { white-space: pre }
 
 #elevator-pitch {
-	& .big {
-		font-size: 1.4em;
+	& :is(p, ul) {
+		font-size: 1.2em;
 	}
 
 	& em {
