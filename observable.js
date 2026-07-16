@@ -66,7 +66,7 @@ export class Observable extends EventTarget {
 	#ref = new WeakRef(this)
 	get ref() { return this.#ref }
 
-	static get new() { throw new Error("Attempting to call 'new' as a class method; this is JavaScript, you absolute imbecile!") }
+	static get new() { throw new Error("Attempting to call 'new' as a class method; this is JavaScript, not Ruby ;)") }
 
 	/** @type {Object} */
 	#target
