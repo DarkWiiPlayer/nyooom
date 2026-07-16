@@ -435,7 +435,7 @@ export class DomHtmlRenderer extends DomRenderer {
 			set(element, value) {
 				for (const [attribute2, value2] of Object.entries(value)) {
 					if (DomRenderer.isState(value2)) {
-						DomRenderer.setReactiveAttribute(element, `data-${snakeToHTML(attribute2)}`, value)
+						DomRenderer.setReactiveAttribute(element, `data-${snakeToHTML(attribute2)}`, value2)
 					} else {
 						element.dataset[attribute2] = DomRenderer.serialiseAttributeValue(value2)
 					}
