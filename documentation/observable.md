@@ -93,7 +93,7 @@ in the order they were passed into the generator.
 ```js
 const difference = State.compute((a, b) => a - b)
 
-const progress = Observable.new({target: 100, current: 30})
+const progress = new Observable({target: 100, current: 30})
 
 const remaining = difference(
 	progress.property("target"),
