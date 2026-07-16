@@ -24,9 +24,12 @@ const listArray = DomProxy.array({
 const list = html.ul()
 const cats = listArray(list)
 
-list.push("Tiger")
-list.push("Ocelot")
-list.push("Snow Leopard")
+cats.push("Tiger")
+cats.push("Fox")
+cats.push("Snow Leopard")
+
+// Wait, there's been a mistake...
+cats[1] = "Ocelot"
 
 console.log(list) // HTML-List with three items
 ```
