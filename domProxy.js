@@ -57,7 +57,6 @@ export const array = (methods, extra) => {
 
 				if (isNaN(targetLength) || targetLength < 0 || (targetLength % 1 !== 0)) throw new RangeError("invalid array length")
 
-				console.log(targetLength, length)
 				if (targetLength < length) {
 					for (const element of Array.from(target.children).slice(targetLength)) {
 						element.remove()
