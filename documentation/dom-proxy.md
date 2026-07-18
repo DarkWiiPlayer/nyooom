@@ -18,7 +18,7 @@ proxy methods, to return a singleton DOM-Array in a single call.
 const listArray = DomProxy.array({
 	get() { return this.innerText },
 	set(text) { this.innerText = text },
-	new(text) { html.li(text) }
+	new(text) { return html.li(text) }
 })
 
 const list = html.ul()
