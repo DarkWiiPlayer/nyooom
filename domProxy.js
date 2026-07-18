@@ -52,10 +52,22 @@ export const array = (methods, extra) => {
 					}
 				}
 			} else if (prop == "length") {
-				if (value == target.children.length)
-					return true
-				else
-					return false
+				const length = target.children.length
+				const targetLength = Number(value)
+
+				if (isNaN(targetLength) || targetLength < 0 || (targetLength % 1 !== 0)) throw new RangeError("invalid array length")
+
+				console.log(targetLength, length)
+				if (targetLength < length) {
+					for (const element of Array.from(target.children).slice(targetLength)) {
+						element.remove()
+					}
+				} else if (value > length) {
+					for (let i = length; i < targetLength; i++) {
+						target.appendChild(methods.new())
+					}
+				}
+				return true
 			}
 		},
 		/**
