@@ -121,3 +121,13 @@ code {
 		.hljs-name { color: oklch(50% 60% var(--hue)); }
 	}
 }
+
+nyooom-module {
+	&:not(:defined) {
+		display: none;
+	}
+
+	&:defined {
+		display: block;
+	}
+}

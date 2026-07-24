@@ -9,12 +9,20 @@
 				"nyooom/controller-registry": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.4.0/controller-registry.js",
 				"nyooom/observable": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.4.0/observable.js",
 				"nyooom/domProxy": "https://cdn.jsdelivr.net/gh/darkwiiplayer/nyooom@0.4.0/domProxy.js",
-				"nyooom/showcase": "./js/nyooom-showcase.js"
+				"nyooom/showcase": "./js/nyooom-showcase.js",
+				"nyooom/module": "./js/nyooom-module.js",
+				"@darkwiiplayer/typewriter": "https://cdn.jsdelivr.net/gh/darkwiiplayer/components@master/TypeWriter.js"
 			}
 		}
 	</script>
 
-	<script type="module" src="https://cdn.jsdelivr.net/gh/darkwiiplayer/components@master/TypeWriter.js"></script>
+	<script type="module">
+		import "@darkwiiplayer/typewriter"
+		import "nyooom/showcase"
+		import {NyooomModule} from "nyooom/module"
+
+		customElements.define("nyooom-module", NyooomModule)
+	</script>
 
 	<style>
 		@import
@@ -55,10 +63,6 @@
 		document.querySelectorAll('code[lang="js"]').forEach(code => {
 			code.innerHTML = hljs.highlight("javascript", code.innerText).value
 		})
-	</script>
-
-	<script type="module">
-		import "nyooom/showcase"
 	</script>
 
 	<a name=top></a>
@@ -221,6 +225,8 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 		<section id="rendering" class="content-width">
 			<h2>Basic DOM generation</h2>
 
+			<nyooom-module>render</nyooom-module>
+
 			<p class="box" stripe="color">The <a href="https://git.but.gay/darkwiiplayer/nyooom/src/branch/main/documentation/render.md">full documentation</a> of the <code>render</code> class is hosted in the repository.</p>
 
 			<section>
@@ -366,6 +372,8 @@ component(myComponent) //Registers it as &lt;my-component&gt;</code></pre>
 		<section id="observable" class="content-width">
 			<h2>Reactivity with Observables</h2>
 
+			<nyooom-module>observable</nyooom-module>
+
 			<p class="box" stripe="color">The <a href="https://git.but.gay/darkwiiplayer/nyooom/src/branch/main/documentation/observable.md">full documentation</a> of the <code>observable</code> module is hosted in the repository.</p>
 
 			<pre class="box"><code lang=js>import {Observable, State} from 'nyooom/observable'</code></pre>
@@ -411,6 +419,8 @@ return html.buttonGroup(
 
 		<section id="controllers" class="content-width">
 			<h2>Controllers</h2>
+
+			<nyooom-module>controller-registry</nyooom-module>
 
 			<p class="box" stripe="color">The <a href="https://git.but.gay/darkwiiplayer/nyooom/src/branch/main/documentation/controllers.md">full documentation</a> of the <code>controllers</code> module is hosted in the repository.</p>
 
